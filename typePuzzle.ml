@@ -23,4 +23,3 @@ type liaison =
 	Null 
 	| Voisin of Voisin * liaison
 
-type mabite = ok ;;
