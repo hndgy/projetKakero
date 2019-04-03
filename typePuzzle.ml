@@ -15,3 +15,5 @@ type cell =
 ;;
 
 type solution = cell list list ;;
+
+type data = coordinate list;;
