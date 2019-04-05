@@ -3,7 +3,9 @@ type coordinate = int * int
 
 type importance = int 
 
-type puzzle = (coordinate * importance) list 
+type vertex = coordinate * importance
+
+type puzzle = vertex list 
 
 type bridge = { isVertical : bool; isDoubled : bool } 
 
@@ -19,10 +21,4 @@ type nbPont = int
 
 type data = coordinate * (importance * nbPont ) list 
 
-type liaison = 
-	Null 
-	| Voisin of Voisin * liaison
-<<<<<<< HEAD
-=======
 
->>>>>>> 0710a27784b818b647bbeb8fa4a6e9dab7686591
