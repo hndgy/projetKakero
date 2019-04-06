@@ -28,12 +28,11 @@ module Data = struct
 			| ((c,(i,n)) as h) :: t  -> if c = coord then aux t acc@[(c,(i,nbPont))]
 				else aux t acc@[h]
 		in
-		aux ldata acc 
+		aux ldata []
 		
-
-
-
 end 
+
+
 
 
 

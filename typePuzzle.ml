@@ -22,3 +22,4 @@ type nbPont = int
 type data = coordinate * (importance * nbPont ) list 
 
 
+exception Pas_de_voisin 
