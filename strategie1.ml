@@ -9,6 +9,7 @@ module Strategie1 : Strategie_type = struct
 			| [] -> acc
 			| (c,) :: t -> match
 		in
+		
 
 
 end
