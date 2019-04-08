@@ -1,26 +1,6 @@
 
 
-type coordinate = int * int
 
-type importance = int 
-
-type vertex = coordinate * importance
-
-type puzzle = vertex list 
-
-type bridge = { isVertical : bool; isDoubled : bool } 
-
-type cell =
-		 Nothing 
-		| Island of importance
-		| Bridge of bridge 
-	
-
-type solution = cell list list
-
-type nbPont = int
-
-type data = (coordinate * (importance * nbPont ) * coordinate list) list 
 
 
 
@@ -33,135 +13,135 @@ exception Empty_list;;
 
 
         
-	
-	let getVoisinGauche p coord =
-	  let i = fst coord and j =  snd coord 
-	  in
-	  let maxX l =
-		  let rec aux l acc mx=
-		    match l with
-			[] -> acc
-		      | (x,y)::t -> if x > mx then aux t (x,y) x
-			else
-			  aux t acc mx
-		  in
-		  aux (List.tl l) (List.hd l) (fst (List.hd l))
-		in
 
-	  let rec aux p acc =
-	    match p with
-		[] -> acc
-	      | ((x,y),imp)::t -> if x < i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
-	  in
-	   if (aux p []) = [] then raise Pas_de_voisin else
-	     maxX (aux p []);;
+let getVoisinGauche p coord =
+  let i = fst coord and j =  snd coord 
+  in
+  let maxX l =
+    let rec aux l acc mx=
+      match l with
+	  [] -> acc
+	| (x,y)::t -> if x > mx then aux t (x,y) x
+	  else
+	    aux t acc mx
+    in
+    aux (List.tl l) (List.hd l) (fst (List.hd l))
+  in
 
-
-
-	  let getVoisinDroit p coord =
-	    let i = fst coord and j =  snd coord 
-	    in
-	    let minX l =
-	      let rec aux l acc mx=
-		match l with
-		    [] -> acc
-		  | (x,y)::t -> if x < mx then aux t (x,y) x
-		    else
-		      aux t acc mx
-	      in
-	      aux (List.tl l) (List.hd l) (fst (List.hd l))
-	    in
-
-	    let rec aux p acc =
-	      match p with
-		  [] -> acc
-		| ((x,y),imp)::t -> if x > i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
-	    in
-	    if (aux p []) = [] then raise Pas_de_voisin else
-	      minX (aux p []);;
+  let rec aux p acc =
+    match p with
+	[] -> acc
+      | ((x,y),imp)::t -> if x < i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
+  in
+  if (aux p []) = [] then raise Pas_de_voisin else
+    maxX (aux p []);;
 
 
 
+let getVoisinDroit p coord =
+  let i = fst coord and j =  snd coord 
+  in
+  let minX l =
+    let rec aux l acc mx=
+      match l with
+	  [] -> acc
+	| (x,y)::t -> if x < mx then aux t (x,y) x
+	  else
+	    aux t acc mx
+    in
+    aux (List.tl l) (List.hd l) (fst (List.hd l))
+  in
 
-
-
-	  let getVoisinHaut p coord =
-	    let i = fst coord and j =  snd coord 
-	    in
-
-	    let maxY l =
-	      let rec aux l acc my=
-		match l with
-		    [] -> acc
-		  | (x,y)::t -> if y > my then aux t (x,y) y
-		    else
-		      aux t acc my
-	      in
-	      aux (List.tl l) (List.hd l) (snd (List.hd l))
-	    in
-	    
-	    let rec aux p acc =
-	      match p with
-		  [] -> acc
-		| ((x,y),imp)::t -> if x = i && y < j then aux t (acc@[(x,y)]) else aux t acc
-	    in
-
-	    if (aux p []) = [] then raise Pas_de_voisin else
-	      maxY (aux p []);;
-
-
-
-	  let getVoisinBas p coord =
-	    let i = fst coord and j =  snd coord 
-	    in
-	   (* let minY l =
-	      let rec aux l acc my=
-		match l with
-		    [] -> acc
-		  | (x,y)::t -> if y < my then aux t (x,y) y
-		    else
-		      aux t acc my
-	      in
-	      let h = List.hd l
-	      in
-	      let y = snd h
-	      in
-	      
-	      aux (List.tl l) h y
-	    in*)
-	    
-	    let rec aux p acc =
-	      match p with
-		  [] -> acc
-		| ((x,y),imp)::t -> if x = i && y > j then aux t (acc@[((x,y),imp)]) else aux t acc
-	    in
-
-	   if (aux p []) = [] then raise Pas_de_voisin else List.hd (aux p [])
-	    
-	    (*if (aux p []) = [] then raise Pas_de_voisin else
-	      minY (aux p [])*)
-	  ;;
-
-	  getVoisinBas p (2,0)
-	
+  let rec aux p acc =
+    match p with
+	[] -> acc
+      | ((x,y),imp)::t -> if x > i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
+  in
+  if (aux p []) = [] then raise Pas_de_voisin else
+    minX (aux p []);;
 
 
 
 
 
-	  let ensVoisin p coord =
-	    let h = try [getVoisinHaut p coord] with Pas_de_voisin -> []
-	    and d = try [getVoisinDroit p coord] with Pas_de_voisin -> []
-	    and b = try [getVoisinBas p coord] with Pas_de_voisin -> []
-	    and g = try [getVoisinGauche p coord] with Pas_de_voisin -> []
 
-	    in
-	    h@d@b@g ;;
+let getVoisinHaut p coord =
+  let i = fst coord and j =  snd coord 
+  in
 
-	  ensVoisin p (4,4);;
+  let maxY l =
+    let rec aux l acc my=
+      match l with
+	  [] -> acc
+	| (x,y)::t -> if y > my then aux t (x,y) y
+	  else
+	    aux t acc my
+    in
+    aux (List.tl l) (List.hd l) (snd (List.hd l))
+  in
+  
+  let rec aux p acc =
+    match p with
+	[] -> acc
+      | ((x,y),imp)::t -> if x = i && y < j then aux t (acc@[((x,y),imp)]) else aux t acc
+  in
+
+  if (aux p []) = [] then raise Pas_de_voisin else
+    maxY (aux p []);;
 
 
-	 
+
+let getVoisinBas p coord =
+  let i = fst coord and j =  snd coord 
+  in
+	    (* let minY l =
+	       let rec aux l acc my=
+	       match l with
+	       [] -> acc
+	       | (x,y)::t -> if y < my then aux t (x,y) y
+	       else
+	       aux t acc my
+	       in
+	       let h = List.hd l
+	       in
+	       let y = snd h
+	       in
+	       
+	       aux (List.tl l) h y
+	       in*)
+  
+  let rec aux p acc =
+    match p with
+	[] -> acc
+      | ((x,y),imp)::t -> if x = i && y > j then aux t (acc@[((x,y),imp)]) else aux t acc
+  in
+
+  if (aux p []) = [] then raise Pas_de_voisin else List.hd (aux p [])
+    
+	  (*if (aux p []) = [] then raise Pas_de_voisin else
+	    minY (aux p [])*)
+;;
+
+getVoisinBas p (2,0)
+  
+
+
+
+
+
+let ensVoisin p coord =
+  let h = try [getVoisinHaut p coord] with Pas_de_voisin -> []
+  and d = try [getVoisinDroit p coord] with Pas_de_voisin -> []
+  and b = try [getVoisinBas p coord] with Pas_de_voisin -> []
+  and g = try [getVoisinGauche p coord] with Pas_de_voisin -> []
+
+  in
+  h@d@b@g ;;
+
+ensVoisin p (4,4);;
+
+
+
 
 		  
 		
@@ -289,13 +269,13 @@ let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];
 let d = Data.init p;;
 
 
-let d1 = Data.incr_nbPont d 2 (2,2) (2,0) ;;
+let d1 = Data.incr_nbPont2 d 2 (2,2) (2,0) ;;
 
-let d2 = Data.incr_nbPont d1 2 (2,2) (0,2) ;;
+let d2 = Data.incr_nbPont2 d1 2 (2,2) (0,2) ;;
 
-let d3 = Data.incr_nbPont d2 2 (2,2) (4,2) ;;
+let d3 = Data.incr_nbPont2 d2 2 (2,2) (4,2) ;;
 
-let d4 = Data.incr_nbPont d3 2 (2,2) (2,4) ;;
+let d4 = Data.incr_nbPont2 d3 2 (2,2) (2,4) ;;
 
 
 let d5 = Data.update d4;;
@@ -324,8 +304,9 @@ let strategie ldata =
       | (c,(i,n),lv)  :: t -> let nb = Data.getNbVoisin acc c in
 	if i = 8 then aux t (mapIncr c acc lv 2)
 	else
-	  if nb = 1 then let (cv,iv) = List.hd lv in
-			 aux t (Data.incr_nbPont2 acc (i - n) c cv)
+	  if i = 4 && nb = 2 then aux t (mapIncr c acc lv 2)
+				    
+	  
 	  else
 	    aux t acc
   in
@@ -334,3 +315,5 @@ let strategie ldata =
 strategie d;;
 
 
+ (*if nb = 1 then let (cv,iv) = List.hd lv in
+			 aux t (Data.incr_nbPont2 acc (i - n) c cv) *)
