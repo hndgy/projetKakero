@@ -19,7 +19,7 @@ type solution = cell list list
 
 type nbPont = int
 
-type data = coordinate * (importance * nbPont ) list 
+type data = (coordinate * (importance * nbPont ) * coordinate list) list 
 
 
 exception Pas_de_voisin 
