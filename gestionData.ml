@@ -103,7 +103,7 @@ exception Empty_list;;
 	    let rec aux p acc =
 	      match p with
 		  [] -> acc
-		| ((x,y),imp)::t -> if x = i && y < j then aux t (acc@[((x,y),imp)]) else aux t acc
+		| ((x,y),imp)::t -> if x = i && y < j then aux t (acc@[(x,y)]) else aux t acc
 	    in
 
 	    if (aux p []) = [] then raise Pas_de_voisin else
@@ -195,7 +195,9 @@ module Data = struct
 
 
 
-	let incr_nbPont ldata coord1 coord2 nb =
+	let incr_nbPont ldata nb coord1 sommet  =
+	  let coord2 = (fun (x,y,z) -> x) sommet in
+	  
 		let rec aux ldata acc=
 			match ldata with
 			[] -> acc
@@ -203,6 +205,21 @@ module Data = struct
 				else aux t acc@[h]
 		in
 		aux ldata []
+
+
+
+	let incr_nbPont2 ldata nb coord1 coord2  =
+	  
+	  
+	  let rec aux ldata acc=
+	    match ldata with
+		[] -> acc
+	      | ((c,(i,n),v) as h) :: t  -> if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
+		else aux t acc@[h]
+	  in
+	  aux ldata []
+
+       
 
 
 
@@ -250,7 +267,9 @@ module Data = struct
 	      | (c,d,l) :: t -> if c = coord then aux t (List.length l) else aux t acc
 	  in if ldata = [] then raise Empty_list
 	    else 
-	      aux ldata 0;;
+	      aux ldata 0
+
+	
 		
 	   
 	
@@ -270,15 +289,48 @@ let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];
 let d = Data.init p;;
 
 
-let d1 = Data.incr_nbPont d (2,2) (2,0) 2;;
+let d1 = Data.incr_nbPont d 2 (2,2) (2,0) ;;
 
-let d2 = Data.incr_nbPont d1 (2,2) (0,2) 2;;
+let d2 = Data.incr_nbPont d1 2 (2,2) (0,2) ;;
 
-let d3 = Data.incr_nbPont d2 (2,2) (4,2) 2;;
+let d3 = Data.incr_nbPont d2 2 (2,2) (4,2) ;;
 
-let d4 = Data.incr_nbPont d3 (2,2) (2,4) 2;;
+let d4 = Data.incr_nbPont d3 2 (2,2) (2,4) ;;
 
 
 let d5 = Data.update d4;;
 
 Data.getNbVoisin d5 (2,4);;
+
+
+
+
+
+let strategie ldata =
+  let mapIncr c ldata lv n =
+    let rec aux lv acc=
+      match lv with
+	  [] -> acc
+	| (coord,_) :: t -> aux t (Data.incr_nbPont2 acc n c coord)
+    in
+    aux lv ldata
+  in
+  
+
+  let rec aux l acc =
+    let ldataUPD = Data.update l in 
+    match ldataUPD with
+	[] -> acc
+      | (c,(i,n),lv)  :: t -> let nb = Data.getNbVoisin acc c in
+	if i = 8 then aux t (mapIncr c acc lv 2)
+	else
+	  if nb = 1 then let (cv,iv) = List.hd lv in
+			 aux t (Data.incr_nbPont2 acc (i - n) c cv)
+	  else
+	    aux t acc
+  in
+  aux ldata ldata;;
+
+strategie d;;
+
+
