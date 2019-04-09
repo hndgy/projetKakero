@@ -1,0 +1,36 @@
+type coordinate = int * int;;
+
+type importance = int ;;
+
+type puzzle = (coordinate * importance) list ;;
+
+type bridge = { isVertical : bool; isDoubled : bool } ;;
+  type cell =
+	 Nothing 
+	| Island of importance
+	| Bridge of bridge 
+;;
+
+module Solution =
+struct
+      
+  let init n =
+    let aux_ligne n =
+      let rec aux n acc =
+	match n with
+	  |0 -> acc
+	  |i -> aux (i-1) (Nothing::acc)
+      in aux n []
+    in
+    let rec aux1 i acc =
+      match i with
+	  0 -> acc
+	| j -> aux1 (j-1) (acc@[aux_ligne n])
+    in aux1 n []
+      
+
+
+
+end;;
+
+Solution.init 4;;
