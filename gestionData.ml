@@ -155,6 +155,7 @@ ensVoisin p (4,4);;
 module Data = struct
 
 
+    
 	let init pzz =
 		 let rec aux p acc =
 	   		match p with
@@ -176,17 +177,20 @@ module Data = struct
 
 
 
-	let incr_nbPont ldata nb coord1 sommet  =
+	let incr_nbPont datab nb coord1 sommet  =
+	   let ldata = (fst datab) and data = (snd datab) in
+	  
 	  
 	  let coord2 = (fun (x,y,z) -> x) sommet in
 	  
 		let rec aux ldata acc=
 			match ldata with
 			[] -> acc
-			| ((c,(i,n),v) as h) :: t  -> if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
+			  | ((c,(i,n),v) as h) :: t  ->
+			    if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
 				else aux t acc@[h]
 		in
-		aux ldata []
+	        ((aux ldata []), data@[(coord1,coord2,nb)])
 
 
 
@@ -218,7 +222,7 @@ module Data = struct
 	    (*supprime les elements traite (imp = nbPont) + stock les element supprime dans supp*)
 	      match ldata with
 		  [] -> acc,supp
-		| ((c,(imp,n),lv) as h) :: t -> if imp = n then aux t acc (supp@[(c,imp)])
+		| ((c,(imp,n),_) as h) :: t -> if imp = n then aux t acc (supp@[c])
 		  else aux t (acc@[h]) supp
 		    
 
@@ -235,7 +239,7 @@ module Data = struct
 		    [] -> acc
 		  | h :: t -> if h = e then aux t acc else aux t acc@[h]
 	      in
-	      
+	     
 	      (c,d,aux l [])
 	    in
 
@@ -296,6 +300,8 @@ data = data
 let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];;
 
 let d = Data.init p;;
+
+
 
 
 let d1 = Data.incr_nbPont2 d 2 (2,2) (2,0) ;;
