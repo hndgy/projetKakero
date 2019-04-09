@@ -122,7 +122,7 @@ let getVoisinBas p coord =
 	    minY (aux p [])*)
 ;;
 
-getVoisinBas p (2,0)
+
   
 
 
@@ -269,9 +269,18 @@ module Data = struct
 	  in if ldata = [] then raise Empty_list
 	    else 
 	      aux ldata 0
+
+
+       
 	    
 		
 end;;
+
+
+
+
+
+
 
 (*
 
@@ -322,35 +331,147 @@ Data.getNbVoisin d1 (2,4);;
 
 
 
-let strategie ldata =
-  let mapIncr c ldata lv n =
+let strategie data_base =
+  let ldata = fst data_base and data = snd data_base in
+    
+  let mapIncr c ldata lv n = (*applique une incr. de "n" a toute la liste de voisin "lv" de "c"*)
     let rec aux lv acc=
       match lv with
 	  [] -> acc
-	| (coord,_) :: t -> aux t (Data.incr_nbPont2 acc n c coord)
+	| coord :: t -> aux t (Data.incr_nbPont2 acc n c coord)
     in
     aux lv ldata
   in
+
+
+  let f8 ldata database = (*traite tous les sommets d'imp 8*)
+    let rec aux ldata acc =
+      let acc' = Data.update acc in
+      match ldata with
+	  [] -> acc'
+	| (c,(imp,nbPont),lv) :: t ->
+	  if imp = 8 then aux t (mapIncr c acc' lv 2)
+	  else aux t acc'
+    in
+    aux ldata database
+  in
+
+   let f4 ldata database = (*traite tous les sommets d'imp 4*)
+    let rec aux ldata acc =
+      let acc' = Data.update acc in
+      match ldata with
+	  [] -> acc'
+	| (c,(imp,nbPont),lv) :: t ->
+	  if ((imp = 4) && ((Data.getNbVoisin acc' c) <= 2))
+	  then aux t (mapIncr c acc' lv 2)
+	  else aux t acc'
+    in
+    aux ldata database
+   in
+
+    let f2 ldata database = (*traite tous les sommets d'imp 4*)
+    let rec aux ldata acc =
+      let acc' = Data.update acc in
+      match ldata with
+	  [] -> acc'
+	| (c,(imp,nbPont),lv) :: t ->
+	  if ((imp = 2) && ((Data.getNbVoisin acc' c) = 1))
+	  then aux t (Data.incr_nbPont2 acc' 2 c (List.hd lv))
+	  else aux t acc'
+    in
+    aux ldata database
+   in
+
+   
+
+
+   let f3 ldata database = (*traite tous les sommets d'imp 4*)
+     let rec aux ldata acc =
+       let acc' = Data.update acc in
+       match ldata with
+	   [] -> acc'
+	 | (c,(imp,nbPont),lv) :: t ->
+	   if ((imp = 3) && ((Data.getNbVoisin acc' c) = 1) && nbPont = 2)
+	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
+	   else aux t acc'
+     in
+     aux ldata database
+   in
+
+   let f5 ldata database = (*traite tous les sommets d'imp 4*)
+     let rec aux ldata acc =
+       let acc' = Data.update acc in
+       match ldata with
+	   [] -> acc'
+	 | (c,(imp,nbPont),lv) :: t ->
+	   if ((imp = 5) && ((Data.getNbVoisin acc' c) = 1) && nbPont >= 3) 
+	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
+	   else aux t acc'
+     in
+     aux ldata database
+   in
+
+
+   
+     
+  
+  
+ 
+
+  
+    
+  
+	    
   
 
-  let rec aux l acc =
-    let ldataUPD = Data.update l in 
-    match ldataUPD with
-	[] -> acc
-      | (c,(i,n),lv)  :: t -> let nb = Data.getNbVoisin acc c in
-	if i = 8 then aux t (mapIncr c acc lv 2)
-	else
-	  if i = 4 && nb = 2 then aux t (mapIncr c acc lv 2)
-				    
-	  
-	  else
-	    aux t acc
+  let aux ldata database = 
+    let d8 = f8 ldata database in
+    let ld8 = fst d8 in
+
+    let d4 = f4 ld8 d8 in
+    let ld4 = fst d4 in
+
+    let d2 = f2 ld4 d4 in
+    let ld2 = fst d2 in
+
+    let d3 = f3 ld2 d2 in
+    let ld3 = fst d3 in
+
+    f5 ld3 d3
+
+							       
+								 
+				 
+    
   in
-  aux ldata ldata;;
+  aux ldata data_base
 
-strategie d;;
+;;
+	
+       
+	    
+	    
+strategie d ;;
 
+
+[((2, 2), (2, 0), 2);
 
  
+ ((2, 2), (4, 2), 2);
 
  
+ ((2, 2), (2, 4), 2);
+
+ 
+ ((2, 2), (0, 2), 2);
+
+ 
+ ((4, 2), (4, 4), 2);
+
+ 
+ ((4, 4), (2, 4), 1);
+ 
+ ((0, 2), (0, 4), 1);
+
+ 
+ ((2, 4), (0, 4), 2) ]
