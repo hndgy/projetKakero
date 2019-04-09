@@ -31,7 +31,7 @@ let getVoisinGauche p coord =
   let rec aux p acc =
     match p with
 	[] -> acc
-      | ((x,y),imp)::t -> if x < i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
+      | ((x,y),_)::t -> if x < i && y = j then aux t (acc@[(x,y)]) else aux t acc
   in
   if (aux p []) = [] then raise Pas_de_voisin else
     maxX (aux p []);;
@@ -55,7 +55,7 @@ let getVoisinDroit p coord =
   let rec aux p acc =
     match p with
 	[] -> acc
-      | ((x,y),imp)::t -> if x > i && y = j then aux t (acc@[((x,y),imp)]) else aux t acc
+      | ((x,y),_)::t -> if x > i && y = j then aux t (acc@[(x,y)]) else aux t acc
   in
   if (aux p []) = [] then raise Pas_de_voisin else
     minX (aux p []);;
@@ -83,7 +83,7 @@ let getVoisinHaut p coord =
   let rec aux p acc =
     match p with
 	[] -> acc
-      | ((x,y),imp)::t -> if x = i && y < j then aux t (acc@[((x,y),imp)]) else aux t acc
+      | ((x,y),_)::t -> if x = i && y < j then aux t (acc@[(x,y)]) else aux t acc
   in
 
   if (aux p []) = [] then raise Pas_de_voisin else
@@ -113,7 +113,7 @@ let getVoisinBas p coord =
   let rec aux p acc =
     match p with
 	[] -> acc
-      | ((x,y),imp)::t -> if x = i && y > j then aux t (acc@[((x,y),imp)]) else aux t acc
+      | ((x,y),_)::t -> if x = i && y > j then aux t (acc@[(x,y)]) else aux t acc
   in
 
   if (aux p []) = [] then raise Pas_de_voisin else List.hd (aux p [])
@@ -160,7 +160,7 @@ module Data = struct
 	   		match p with
 				[] -> acc
 	      		| (c,imp) :: t -> aux t (acc@[(c,(imp,0),(ensVoisin pzz c))])
-	  	in aux pzz []
+	  	in ((aux pzz []),[])
 
 
 (*	let contains ldata coord = 
@@ -172,10 +172,12 @@ module Data = struct
 		in 
 		aux ldata false*)
 
+        
 
 
 
 	let incr_nbPont ldata nb coord1 sommet  =
+	  
 	  let coord2 = (fun (x,y,z) -> x) sommet in
 	  
 		let rec aux ldata acc=
@@ -188,59 +190,74 @@ module Data = struct
 
 
 
-	let incr_nbPont2 ldata nb coord1 coord2  =
+	let incr_nbPont2 datab nb coord1 coord2  =
+
+	  let ldata = (fst datab) and data = (snd datab) in
 	  
 	  
-	  let rec aux ldata acc=
+	  let rec aux ldata acc =
 	    match ldata with
 		[] -> acc
-	      | ((c,(i,n),v) as h) :: t  -> if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
+	      | ((c,(i,n),v) as h) :: t  ->
+		if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
 		else aux t acc@[h]
 	  in
-	  aux ldata []
+	  ((aux ldata []), data@[(coord1,coord2,nb)])
 
        
 
 
 
-
-	let update data =
+	let update datab =
+	  let ldata = fst datab and data = snd datab in
 	  
-	  let rec aux ldata acc supp =
-	    match ldata with
-		[] -> acc,supp
-	      | ((c,(imp,n),lv) as h) :: t -> if imp = n then aux t acc (supp@[(c,imp)])
-		else aux t (acc@[h]) supp
-       
+	  let update_aux ldata =
+	    
+	    
+	    let rec aux ldata acc supp =
+	    (*supprime les elements traite (imp = nbPont) + stock les element supprime dans supp*)
+	      match ldata with
+		  [] -> acc,supp
+		| ((c,(imp,n),lv) as h) :: t -> if imp = n then aux t acc (supp@[(c,imp)])
+		  else aux t (acc@[h]) supp
+		    
 
-	  in
-     
-	  let res = aux data [] []
-	  in
-	  let ld = fst res and lsupp = snd res
-	  in
-	  let delete e (c,d,l) =
-	    let rec aux l acc =
-	      match l with
-		  [] -> acc
-		| h :: t -> if h = e then aux t acc else aux t acc@[h]
 	    in
 	    
-	   (c,d,aux l [])
+	    let res = aux ldata [] []
+	    in
+	    let ld = fst res and lsupp = snd res
+	    in
+	    let delete e (c,d,l) =
+	    (* supprime dans une liste de voisin  (l dans (c,d,l) )l'element e*)
+	      let rec aux l acc =
+		match l with
+		    [] -> acc
+		  | h :: t -> if h = e then aux t acc else aux t acc@[h]
+	      in
+	      
+	      (c,d,aux l [])
+	    in
+
+	    
+
+	 (*supprime les elements supprimer des liste de voisin de chaque sommets restants*)
+	    let rec aux1 supp acc =
+	      match supp with
+		  [] -> acc
+		| h :: t -> aux1 t (List.map (delete h) acc)
+	    in
+	    aux1 lsupp ld
 	  in
 
-	 	
-
-	 let rec aux1 supp acc =
-	    match supp with
-		[] -> acc
-	      | h :: t -> aux1 t (List.map (delete h) acc)
-	  in
-	  aux1 lsupp ld
+	(update_aux ldata,data)
 
 
 
-	let getNbVoisin ldata coord =
+
+	
+	let getNbVoisin datab coord =
+	  let ldata = fst datab in
 	  let rec aux l acc =
 	    match l with
 		[] -> acc
@@ -248,18 +265,30 @@ module Data = struct
 	  in if ldata = [] then raise Empty_list
 	    else 
 	      aux ldata 0
+	    
+		
+end;;
 
-	
-		
-	   
-	
-	     
-	      
-	    
-		
-	    
-		
- end;;
+(*
+
+type nbPont = int
+
+type data_base = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
+
+
+type data = (coordinate * coordinate * nbPont) list 
+
+args :
+
+datab = data base = (data_base,data)
+
+ldata = data_base
+
+data = data  
+
+(c,d,l) = ( coord ,(imp, nbPont),liste_voisins)
+
+*)
 
 
 
@@ -270,6 +299,7 @@ let d = Data.init p;;
 
 
 let d1 = Data.incr_nbPont2 d 2 (2,2) (2,0) ;;
+Data.update d1 ;;
 
 let d2 = Data.incr_nbPont2 d1 2 (2,2) (0,2) ;;
 
@@ -280,7 +310,7 @@ let d4 = Data.incr_nbPont2 d3 2 (2,2) (2,4) ;;
 
 let d5 = Data.update d4;;
 
-Data.getNbVoisin d5 (2,4);;
+Data.getNbVoisin d1 (2,4);;
 
 
 
@@ -315,5 +345,6 @@ let strategie ldata =
 strategie d;;
 
 
- (*if nb = 1 then let (cv,iv) = List.hd lv in
-			 aux t (Data.incr_nbPont2 acc (i - n) c cv) *)
+ 
+
+ 
