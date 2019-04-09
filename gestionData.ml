@@ -311,28 +311,8 @@ let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];
 let d = Data.init p;;
 
 
-
-
-let d1 = Data.incr_nbPont2 d 2 (2,2) (2,0) ;;
-Data.update d1 ;;
-
-let d2 = Data.incr_nbPont2 d1 2 (2,2) (0,2) ;;
-
-let d3 = Data.incr_nbPont2 d2 2 (2,2) (4,2) ;;
-
-let d4 = Data.incr_nbPont2 d3 2 (2,2) (2,4) ;;
-
-
-let d5 = Data.update d4;;
-
-Data.getNbVoisin d1 (2,4);;
-
-
-
-
-
-let strategie data_base =
-  let ldata = fst data_base and data = snd data_base in
+let strategie1 data_base =
+  let ldata = fst data_base in
     
   let mapIncr c ldata lv n = (*applique une incr. de "n" a toute la liste de voisin "lv" de "c"*)
     let rec aux lv acc=
@@ -355,6 +335,20 @@ let strategie data_base =
     in
     aux ldata database
   in
+
+  let f6 ldata database = (*traite tous les sommets d'imp 4*)
+    let rec aux ldata acc =
+      let acc' = Data.update acc in
+      match ldata with
+	  [] -> acc'
+	| (c,(imp,nbPont),lv) :: t ->
+	  if ((imp = 6) && ((Data.getNbVoisin acc' c) <= 3))
+	  then aux t (mapIncr c acc' lv 2)
+	  else aux t acc'
+    in
+    aux ldata database
+   in
+  
 
    let f4 ldata database = (*traite tous les sommets d'imp 4*)
     let rec aux ldata acc =
@@ -385,6 +379,20 @@ let strategie data_base =
    
 
 
+    let f1 ldata database = (*traite tous les sommets d'imp 4*)
+      let rec aux ldata acc =
+	let acc' = Data.update acc in
+	match ldata with
+	    [] -> acc'
+	  | (c,(imp,nbPont),lv) :: t ->
+	    if ((imp = 1) && ((Data.getNbVoisin acc' c) = 1))
+	    then aux t (Data.incr_nbPont2 acc' 1 c (List.hd lv))
+	    else aux t acc'
+      in
+      aux ldata database
+    in
+
+    
    let f3 ldata database = (*traite tous les sommets d'imp 4*)
      let rec aux ldata acc =
        let acc' = Data.update acc in
@@ -411,8 +419,18 @@ let strategie data_base =
      aux ldata database
    in
 
-
-   
+    let f7 ldata database = (*traite tous les sommets d'imp 4*)
+     let rec aux ldata acc =
+       let acc' = Data.update acc in
+       match ldata with
+	   [] -> acc'
+	 | (c,(imp,nbPont),lv) :: t ->
+	   if ((imp = 7) && ((Data.getNbVoisin acc' c) = 1) && nbPont >= 5) 
+	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
+	   else aux t acc'
+     in
+     aux ldata database
+    in
      
   
   
@@ -423,55 +441,288 @@ let strategie data_base =
   
 	    
   
+    let aux ldata database =(* on traite les importances a tour de role mais
+		d'abord les paires puis les impaires*)
+      
+      let d8 = f8 ldata database in
+      let ld8 = fst d8 in
 
-  let aux ldata database = 
-    let d8 = f8 ldata database in
-    let ld8 = fst d8 in
+      let d6 = f6 ld8 d8 in
+      let ld6 = fst d6 in
+      
 
-    let d4 = f4 ld8 d8 in
-    let ld4 = fst d4 in
+      let d4 = f4 ld6 d6 in
+       let ld4 = fst d6 in
 
-    let d2 = f2 ld4 d4 in
-    let ld2 = fst d2 in
+      let d2 = f2 ld4 d4 in
+      let ld2 = fst d2 in
 
-    let d3 = f3 ld2 d2 in
-    let ld3 = fst d3 in
 
-    f5 ld3 d3
+      let d1 = f1 ld2 d2 in
+      let ld1 = fst d1 in
+      
+      let d3 = f3 ld1 d1 in
+      let ld3 = fst d3 in
 
-							       
-								 
+      let d5 = f5 ld3 d3 in
+      let ld5 = fst d5 in
+
+      f7 ld5 d5
+    in
+
+    let a = aux ldata data_base in
+    aux (fst a) a
+
+    
+    
+    
+
+    ;;
+
+    								 
 				 
     
-  in
-  aux ldata data_base
 
-;;
-	
+
+
+
        
 	    
 	    
-strategie d ;;
+strategie1 d ;;
 
 
-[((2, 2), (2, 0), 2);
+
+type coordinate = int * int
+
+type importance = int 
+
+type vertex = coordinate * importance
+
+type puzzle = vertex list 
+
+type bridge = { isVertical : bool; isDoubled : bool } 
+
+type cell =
+		 Nothing 
+		| Island of importance
+		| Bridge of bridge 
+	
+
+type solution = cell list list
+
+type nbPont = int
+
+type data_base = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
+
+
+type data = (coordinate * coordinate * nbPont) list 
+
+module Solution =
+struct
+
 
  
- ((2, 2), (4, 2), 2);
+
+    
+ let empty n =
+  let aux_ligne n =
+    let rec aux n acc =
+      match n with
+	  0 -> acc
+	| i -> aux (i-1) (Nothing::acc)
+    in
+    aux n []
+  in
+  let l = aux_ligne n
+  in
+  
+  let rec aux_sol_vide n acc =
+    match n with
+	0-> acc
+      | i -> aux_sol_vide (i-1) (l::acc)
+  in
+  aux_sol_vide n []
+
+
+
+ let add (x,y) c s = (* ajoiute la cell c en (x,y) dans s*)
+   let addLine l x =
+     let rec aux l x acc =
+       match l,x with
+	   [],_ -> acc
+	 | h :: t,i ->
+	   if i = 0 then aux t (i-1) (acc@[c])
+	   else
+	     aux t (i-1) (acc@[h])
+     in
+     aux l x []
+   in
+   let rec aux s y acc =
+     match s,y with
+	 [],_ -> acc
+       | h :: t, i ->
+	 if i = 0 then aux t (i-1) (acc@[addLine h x])
+	 else aux t (i-1) (acc@[h])
+   in
+   aux s y []
+
+ let addIsland c imp s = add c (Island imp) s
+
+ let addBridge c isV isD s = add c (Bridge {isVertical = isV ; isDoubled = isD}) s
+
+ let addBridgeH s taille (x,y) isD =
+   let rec aux n acc =
+     match n with
+	 i when i = taille -> acc
+       | i -> aux (i+1) (addBridge (x+i,y) false isD acc)
+   in
+   aux 0 s
+
+ let addBridgeV s taille (x,y) isD =
+   let rec aux n acc =
+     match n with
+	 i when i = taille -> acc
+       | i -> aux (i+1) (addBridge (x,y+i) true isD acc)
+   in
+   aux 0 s
+     
+
+ let relier s (((x1,y1) as c1),((x2,y2) as c2),n) =
+   let isD = n = 2
+   and isV = x1 = x2
+   and t = Puzzle.distance p c1 c2 in
+
+   if isV then
+     if y1 < y2 then addBridgeV s t (x1,y1+1) isD
+     else addBridgeV s t (x2,y2+1) isD
+   else
+     if x1 < x2 then addBridgeH s t (x1+1,y1)  isD
+     else addBridgeH s t (x2+1,y2) isD
+     
+
+   
+   
+   
+
+
+
+
+
+
+ let init p =
+  let rec aux p acc =
+     match p with
+	 [] -> acc
+       | (c,imp) :: t -> aux t (addIsland c imp acc)  
+  in
+  aux p (empty (Puzzle.size p))
 
  
- ((2, 2), (2, 4), 2);
 
- 
- ((2, 2), (0, 2), 2);
 
- 
- ((4, 2), (4, 4), 2);
+end;;
 
- 
- ((4, 4), (2, 4), 1);
- 
- ((0, 2), (0, 4), 1);
+let s1 = Solution.init p;;
 
- 
- ((2, 4), (0, 4), 2) ]
+Solution.relier s1 ((2, 2), (2, 0), 2);;
+
+
+  
+
+
+exception Sommet_incompatible;;
+
+module Puzzle =
+struct
+
+  let size p =
+    let max x1 x2 = if x1 > x2 then x1 else x2 in 
+    let rec maxAbs p m =
+      match p with
+	  [] -> m
+	| ((x,_),_) :: t ->  maxAbs t (max x m)
+    in
+     let rec maxOrd p m =
+      match p with
+	  [] -> m
+	| ((_,y),_) :: t ->  maxOrd t (max y m)
+     in
+
+     ( max (maxAbs p 0) (maxOrd p 0)) + 1
+
+
+
+  let distance p (x1,y1) (x2,y2) =
+
+    let abs a = if a < 0 then -a else a in
+    if x1 = x2 then abs (y1 - y2) - 1
+    else if y1 = y2 then abs (x1 - x2) - 1
+    else raise Sommet_incompatible
+    
+    
+
+end ;;
+
+
+
+let solve' p =
+
+  let resStrategie1 = strategie1 (Data.init p) in
+  let res = snd resStrategie1 and rest = fst resStrategie1 in
+
+  let rec aux l acc =
+    match l with
+	[] -> acc
+      | h :: t -> aux t (Solution.relier acc h)
+  in
+
+  if rest = [] then aux res (Solution.init p)
+  else failwith "stratégie 2 !!"
+;;
+
+
+let solve p =
+   let resStrategie1 = strategie1 (Data.init p) in
+   let res = snd resStrategie1 in
+    let rec aux l acc =
+    match l with
+	[] -> acc
+      | h :: t -> aux t (Solution.relier acc h)
+    in
+    aux res (Solution.init p);;
+   
+
+
+solve p;;
+  
+
+
+
+let p1 = [((0,0),4) ; ((3,0),4) ; ((6,0),3);
+
+	 ((1,2),1) ; ((3,2),4) ; ((5,2),2);
+	 ((0,3),4);((6,3),5);
+	 ((0,5),2) ; ((5,5),1);
+	 ((2,6),1) ; ((4,6),3) ; ((6,6),4)];;
+
+Solution.init p1 ;;
+
+
+strategie1 (Data.init p1) ;;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
