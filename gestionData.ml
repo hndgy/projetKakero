@@ -435,16 +435,26 @@ let f6  database = (*traite tous les sommets d'imp 6*)
     match ldata with
 	[] -> acc
       | (c,(imp,nbPont),lv) :: t ->
-	if ((imp = 6) && ((List.length lv) = 3) && nbPont = 0) 
-	then aux t  (Data.map_connect c acc lv 2)
 
-	else if ((imp = 6) && ((List.length lv) = 2) && nbPont = 2)
-	then aux t (Data.map_connect c acc lv 2)
+	if imp = 6 then
+	  let nbV = List.length lv in
 	  
-	else if ((imp = 6) && ((List.length lv) = 1) && nbPont = 4)
-	then aux t (Data.map_connect c acc lv 2)
-	  
-	else aux t acc
+	  if ( (nbV = 3) && nbPont = 0) 
+	  then aux t  (Data.map_connect c acc lv 2)
+
+	  else if ((nbV = 2) && nbPont = 2)
+	  then aux t (Data.map_connect c acc lv 2)
+
+	  else if ((nbV = 3) && nbPont = 1)
+	  then aux t (Data.map_connect c acc lv 1)
+	    
+	  else if ( ((nbV = 1) && nbPont = 4)
+	  then aux t (Data.connect acc 2 c (List.hd lv))
+	      
+
+	  else aux t acc
+	    
+	  else aux t acc
   in
   aux ldata database
 ;;
@@ -604,11 +614,18 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	   if imp = 7 then
 	     let nbV = List.length lv in
 	     
-	     if ( (nbV = 1) && nbPont >= 5) 
-	     then aux t  (Data.connect acc (imp - nbPont) c (List.hd lv))
+	     if ( (nbV = 1) && nbPont = 5) 
+	     then aux t  (Data.connect acc 2 c (List.hd lv))
+
+	     else if ( (nbV = 1) && nbPont = 6)
+	     then aux t  (Data.connect acc 1 c (List.hd lv))
+	       
 	       
 	     else if nbV = 3 && nbPont = 1
 	     then  aux t  (Data.map_connect c acc lv 2)
+
+	     else if nbV = 4 && nbPont = 0
+	     then  aux t  (Data.map_connect c acc lv 1)
 	       
 	     else if nbV = 3 && nbPont = 2
 	     then  aux t  (Data.map_connect c acc lv 1)
@@ -863,3 +880,7 @@ let p2 = [((2,0),1);((4,0),3);((6,0),1);((0,1),2);((5,1),1);((2,2),4);((4,2),5);
 
 
 strategie1 (Data.init p2);;
+
+
+let p4 = [((0,2),1);((0,4),1);((0,6),3);((1,0),2);((3,0),6);((3,2),6);((3,6),5);((4,3),1);((4,5),1);((5,2),2);((5,6),2);((6,0),3);((6,3),3);((6,5),2)];;
+strategie1 (Data.init p4);;
