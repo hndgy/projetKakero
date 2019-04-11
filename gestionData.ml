@@ -177,40 +177,86 @@ module Data = struct
 
 
 
-	let incr_nbPont datab nb coord1 sommet  =
-	   let ldata = (fst datab) and data = (snd datab) in
-	  
-	  
-	  let coord2 = (fun (x,y,z) -> x) sommet in
-	  
-		let rec aux ldata acc=
-			match ldata with
-			[] -> acc
-			  | ((c,(i,n),v) as h) :: t  ->
-			    if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
-				else aux t acc@[h]
-		in
-	        ((aux ldata []), data@[(coord1,coord2,nb)])
 
 
+	let connect database nb coord1 coord2  =
 
-	let incr_nbPont2 datab nb coord1 coord2  =
+	  let database' = control_collision database coord1 coord2 nb in
+	  let ldata = (fst database') and hist = (snd database') in
 
-	  let ldata = (fst datab) and data = (snd datab) in
 	  
 	  
-	  let rec aux ldata acc =
+	  let rec modifNb ldata acc =
 	    match ldata with
 		[] -> acc
 	      | ((c,(i,n),v) as h) :: t  ->
-		if c = coord1 || c = coord2 then aux t acc@[(c,(i,n+nb),v)]
-		else aux t acc@[h]
+		if c = coord1 || c = coord2 then modifNb t acc@[(c,(i,n+nb),v)]
+		else modifNb t acc@[h]
 	  in
-	  ((aux ldata []), data@[(coord1,coord2,nb)])
+	  let newHist =
+	    if (List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist) then
+
+	      let rec aux hist acc =
+		match hist with
+		    [] -> acc
+		  | ((c1,c2,n) as h) :: t ->
+		    if (c1 = coord1 && c2 = coord2) ||  (c1 = coord2 && c2 = coord1)
+		    then aux t acc@[(c1,c2,n+1)]
+		    else aux t acc@[h]
+	      in
+	      
+	      aux hist []
+		
+	    else hist@[(coord1,coord2,nb)]
+	  
+	  in
+		  
+	  let newDb = ((modifNb ldata []), newHist) in
+	  
+	  update newDb
 
        
 
 
+	let control_collision database (x1,y1) (x2,y2) nb =
+	(*retire une ile de la liste des voisins si il y a un pont entre*)
+
+
+          let cond (xa,ya) (xb,yb) =
+
+	    if x1 = x2 && ya = yb then 
+	      (((xa < x1) && (x1 < xb)) || ((xa > x1) &&( x1 > xb) )) &&
+		(((y1 < ya) &&( ya< y2) ) || ((y1 < ya) && (ya< y2) ))
+	    else
+
+	      (((x1 < xa) && (xa < x2)) || ((x1 > xa) && (xa > x2))) &&
+		(((ya < y1) && (y1 < yb)) || ((ya > y1) && (y1 > yb)))
+		
+		
+		
+		
+	  in
+
+	  
+	  let supprCollision c lv =
+	    let rec aux lv acc =
+	      match lv with
+		  [] -> acc
+		| h :: t -> if cond c h then aux t acc else
+		    aux t (acc@[h]) in
+	    
+	    aux lv []
+	  in
+
+	  let f (c,d,lv) = (c,d,(supprCollision c lv)) in
+
+	  let ldata = fst database and hist = snd database in
+
+	  let del ldata = List.map f ldata in 
+	  
+	  ((del ldata),hist)
+		
+	      
 
 	let update datab =
 	  let ldata = fst datab and data = snd datab in
@@ -271,11 +317,28 @@ module Data = struct
 	      aux ldata 0
 
 
-       
-	    
-		
-end;;
+	let map_connect c ldata lv n = (*applique une incr. de "n" a toute la liste de voisin "lv" de "c"*)
+	  let rec aux lv acc=
+	    match lv with
+		[] -> acc
+	      | coord :: t -> aux t (connect acc n c coord)
+	  in
+	  aux lv ldata
 
+
+	let imp_of_coord ldata c =
+	  let rec aux ldata acc =
+	    match ldata with
+		[] -> acc
+	      | (coord,(_,imp),lv) :: t -> if c = coord then aux t imp else aux t acc
+	  in
+	  aux ldata 0
+
+
+	
+	
+	
+end;;
 
 
 
@@ -311,179 +374,289 @@ let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];
 let d = Data.init p;;
 
 
-let strategie1 data_base =
-  let ldata = fst data_base in
-    
-  let mapIncr c ldata lv n = (*applique une incr. de "n" a toute la liste de voisin "lv" de "c"*)
-    let rec aux lv acc=
-      match lv with
+let p1 = [((0,0),4) ; ((3,0),4) ; ((6,0),3);
+
+	 ((1,2),1) ; ((3,2),4) ; ((5,2),2);
+	 ((0,3),4);((6,3),5);
+	 ((0,5),2) ; ((5,5),1);
+	 ((2,6),1) ; ((4,6),3) ; ((6,6),4)];;
+
+Solution.init p1 ;;
+
+let di = Data.init p1 ;;
+
+
+
+
+
+
+
+
+strategie1 (Data.init p1);;
+
+  
+solve p1;;
+
+
+let pT = [((0,2),2);((2,0),1);((2,4),1);((4,2),2)];;  
+
+let db  = Data.init pT;;
+
+
+Data.connect db 1 (2,0) (2,4);;
+
+;;
+
+
+
+let f8  database = (*traite tous les sommets d'imp 8*)
+  let ldata = fst database in 
+    let rec aux ldata acc =
+      
+      match ldata with
 	  [] -> acc
-	| coord :: t -> aux t (Data.incr_nbPont2 acc n c coord)
-    in
-    aux lv ldata
-  in
-
-
-  let f8 ldata database = (*traite tous les sommets d'imp 8*)
-    let rec aux ldata acc =
-      let acc' = Data.update acc in
-      match ldata with
-	  [] -> acc'
 	| (c,(imp,nbPont),lv) :: t ->
-	  if imp = 8 then aux t (mapIncr c acc' lv 2)
-	  else aux t acc'
+	  if imp = 8 then aux t  (Data.map_connect c acc lv 2)
+	  else aux t acc
     in
     aux ldata database
-  in
+;;
 
-  let f6 ldata database = (*traite tous les sommets d'imp 4*)
-    let rec aux ldata acc =
-      let acc' = Data.update acc in
-      match ldata with
-	  [] -> acc'
-	| (c,(imp,nbPont),lv) :: t ->
-	  if ((imp = 6) && ((Data.getNbVoisin acc' c) <= 3))
-	  then aux t (mapIncr c acc' lv 2)
-	  else aux t acc'
-    in
-    aux ldata database
-   in
+
+let f6  database = (*traite tous les sommets d'imp 6*)
+  (* si c'est un sommet d'importance 6 :
+     si il a 3 voisins dispos et qu'il est connecté a 0 pont alors on le connecte avec des doubles ponts a chacun de ses 3 voisins
+     meme chose pour 2 voisins et 2 ponts deja connectés
+     et pour 1 voisin et 4 ponts deja connectés *)
+  let ldata = fst database in 
+
+  let rec aux ldata acc =
+    
+    match ldata with
+	[] -> acc
+      | (c,(imp,nbPont),lv) :: t ->
+	if ((imp = 6) && ((List.length lv) = 3) && nbPont = 0) 
+	then aux t  (Data.map_connect c acc lv 2)
+
+	else if ((imp = 6) && ((List.length lv) = 2) && nbPont = 2)
+	then aux t (Data.map_connect c acc lv 2)
+	  
+	else if ((imp = 6) && ((List.length lv) = 1) && nbPont = 4)
+	then aux t (Data.map_connect c acc lv 2)
+	  
+	else aux t acc
+  in
+  aux ldata database
+;;
+
   
 
-   let f4 ldata database = (*traite tous les sommets d'imp 4*)
-    let rec aux ldata acc =
-      let acc' = Data.update acc in
-      match ldata with
-	  [] -> acc'
-	| (c,(imp,nbPont),lv) :: t ->
-	  if ((imp = 4) && ((Data.getNbVoisin acc' c) <= 2))
-	  then aux t (mapIncr c acc' lv 2)
-	  else aux t acc'
-    in
-    aux ldata database
-   in
+let f4  database = (*traite tous les sommets d'imp 4*)
+  let ldata = fst database in 
+  let rec aux ldata acc =
+    
+    match ldata with
+	[] -> acc
+      | (c,(imp,nbPont),lv) :: t ->
+	if imp = 4 then 
+	  let nbV = List.length lv in
 
-    let f2 ldata database = (*traite tous les sommets d'imp 4*)
-    let rec aux ldata acc =
-      let acc' = Data.update acc in
-      match ldata with
-	  [] -> acc'
-	| (c,(imp,nbPont),lv) :: t ->
-	  if ((imp = 2) && ((Data.getNbVoisin acc' c) = 1))
-	  then aux t (Data.incr_nbPont2 acc' 2 c (List.hd lv))
-	  else aux t acc'
-    in
-    aux ldata database
-   in
+	  
+	  
+	  if ((nbV = 2) && nbPont = 0)
+	  then aux t (Data.map_connect c acc lv 2)
+
+	  else if nbV = 2 && nbPont = 1
+	  then aux t (Data.map_connect c acc lv 1)
+	    
+	  else if ( (nbV = 1) && nbPont = 2)
+	  then aux t (Data.connect acc 2 c (List.hd lv))
+	    
+	  else if ( (nbV = 1) && nbPont = 3)
+	  then aux t (Data.connect acc 1 c (List.hd lv))
+
+	      
+	  else aux t acc
+	    
+	  else aux t acc
+  in
+  aux ldata database
+;;
+
+
+	     
+   let f2 database = (*traite tous les sommets d'imp 4*)
+     let ldata = fst database in 
+     let rec aux ldata acc =
+       
+       match ldata with
+	   [] -> acc
+	 | (c,(imp,nbPont),lv) :: t ->
+	   if imp = 2 then
+	     let nbV = List.length lv in 
+	     
+	     if (nbV = 1) && nbPont = 0
+	     then aux t  (Data.connect acc 2 c (List.hd lv))    
+	       
+	     else if  (nbV  = 1) && nbPont = 1
+	     then aux t  (Data.connect acc 1 c (List.hd lv))
+	       
+	     else aux t acc
+
+	     else aux t acc
+     in
+     aux ldata database
+   ;;
+
 
    
 
 
-    let f1 ldata database = (*traite tous les sommets d'imp 4*)
+   let f1  database = (*traite tous les sommets d'imp 4*)
+     let ldata = fst database in 
       let rec aux ldata acc =
-	let acc' = Data.update acc in
+        
 	match ldata with
-	    [] -> acc'
+	    [] -> acc
 	  | (c,(imp,nbPont),lv) :: t ->
-	    if ((imp = 1) && ((Data.getNbVoisin acc' c) = 1))
-	    then aux t (Data.incr_nbPont2 acc' 1 c (List.hd lv))
-	    else aux t acc'
+	    if ((imp = 1) && ((List.length lv) = 1))
+	    then aux t  (Data.connect acc 1 c (List.hd lv))
+	    else aux t acc
       in
       aux ldata database
-    in
+;;
 
-    
-   let f3 ldata database = (*traite tous les sommets d'imp 4*)
+
+   
+   let f3 database = (*traite tous les sommets d'imp 4*)
+     let ldata = fst database in 
      let rec aux ldata acc =
-       let acc' = Data.update acc in
+       
        match ldata with
-	   [] -> acc'
+	   [] -> acc
 	 | (c,(imp,nbPont),lv) :: t ->
-	   if ((imp = 3) && ((Data.getNbVoisin acc' c) = 1) && nbPont = 2)
-	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
-	   else aux t acc'
+	   if imp = 3 then
+	     let nbV = List.length lv in 
+	     if ( nbV = 1 && nbPont = 1 )
+	     then aux t  (Data.connect acc 2 c (List.hd lv))
+	       
+	     else if ( nbV = 1 && nbPont = 2 )
+	     then aux t  (Data.connect acc 1 c (List.hd lv))
+	       
+	     else if nbV = 2 && nbPont = 0
+	     then aux t (Data.map_connect c acc lv 1)
+
+
+	     else aux t acc
+	       
+	     else aux t acc
      in
      aux ldata database
-   in
 
-   let f5 ldata database = (*traite tous les sommets d'imp 4*)
+;;
+
+
+   let f5  database = (*traite tous les sommets d'imp 4*)
+     let ldata = fst database in 
      let rec aux ldata acc =
-       let acc' = Data.update acc in
+       
        match ldata with
-	   [] -> acc'
+	   [] -> acc
 	 | (c,(imp,nbPont),lv) :: t ->
-	   if ((imp = 5) && ((Data.getNbVoisin acc' c) = 1) && nbPont >= 3) 
-	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
-	   else aux t acc'
+	   if imp = 5 then
+	     let nbV = List.length lv in
+	     if ( (nbV = 1) && nbPont = 3) 
+	     then aux t  (Data.connect acc 2 c (List.hd lv))
+
+	     else if nbV = 1 && nbPont = 4
+	     then aux t  (Data.connect acc 1 c (List.hd lv))  
+
+	     else if ( (nbV = 2) && (nbPont = 1))
+	     then aux t (Data.map_connect c acc lv 2)
+	       
+	     else if ((nbV = 2 ) && (nbPont = 2 ))
+	     then aux t  (Data.map_connect c acc lv 1)
+
+	     else if nbV = 3 && nbPont = 0
+	     then aux t  (Data.map_connect c acc lv 1)
+
+	     else if nbV = 2 && nbPont = 3
+	     then aux t  (Data.map_connect c acc lv 1)
+
+
+	     
+	     else
+	       aux t acc 
+
+	   else aux t acc
      in
      aux ldata database
-   in
+;;
 
-    let f7 ldata database = (*traite tous les sommets d'imp 4*)
+
+   let f7  database = (*traite tous les sommets d'imp 4*)
+     let ldata = fst database in 
      let rec aux ldata acc =
-       let acc' = Data.update acc in
+       
        match ldata with
-	   [] -> acc'
+	   [] -> acc
 	 | (c,(imp,nbPont),lv) :: t ->
-	   if ((imp = 7) && ((Data.getNbVoisin acc' c) = 1) && nbPont >= 5) 
-	   then aux t (Data.incr_nbPont2 acc' (imp - nbPont) c (List.hd lv))
-	   else aux t acc'
+	   if imp = 7 then
+	     let nbV = List.length lv in
+	     
+	     if ( (nbV = 1) && nbPont >= 5) 
+	     then aux t  (Data.connect acc (imp - nbPont) c (List.hd lv))
+	       
+	     else if nbV = 3 && nbPont = 1
+	     then  aux t  (Data.map_connect c acc lv 2)
+	       
+	     else if nbV = 3 && nbPont = 2
+	     then  aux t  (Data.map_connect c acc lv 1)
+
+	     else if nbV = 2 && nbPont = 3
+	     then  aux t  (Data.map_connect c acc lv 2)
+
+	     else if nbV = 2 && nbPont = 4 
+	     then  aux t  (Data.map_connect c acc lv 1)
+	     else aux t acc
+	       
+	       
+	     else aux t acc
      in
      aux ldata database
-    in
-     
-  
-  
+   ;;
+
+
+
+
  
 
   
     
   
 	    
-  
-    let aux ldata database =(* on traite les importances a tour de role mais
-		d'abord les paires puis les impaires*)
-      
-      let d8 = f8 ldata database in
-      let ld8 = fst d8 in
+   let strategie1  data_base =
+    (* on traite les importances a tour de role mais
+				d'abord les paires puis les impaires*)
+    let f db =  f7(f6 (f2 (f1 (f5 (f3 (f4 (f8 db)))))))
 
-      let d6 = f6 ld8 d8 in
-      let ld6 = fst d6 in
-      
-
-      let d4 = f4 ld6 d6 in
-       let ld4 = fst d6 in
-
-      let d2 = f2 ld4 d4 in
-      let ld2 = fst d2 in
-
-
-      let d1 = f1 ld2 d2 in
-      let ld1 = fst d1 in
-      
-      let d3 = f3 ld1 d1 in
-      let ld3 = fst d3 in
-
-      let d5 = f5 ld3 d3 in
-      let ld5 = fst d5 in
-
-      f7 ld5 d5
     in
 
-    let a = aux ldata data_base in
-    aux (fst a) a
-
+    let rec boucle db = (*boucle qui s'arrete quand il n'y plus de modification possible*)
+      let res = f db in
+      if db = res then res
+      else
+	match fst res with
+	  [] -> res
+	| _ -> boucle res
+    in
     
-    
-    
-
+		       
+    boucle data_base 
     ;;
 
+
     								 
-				 
-    
-
-
 
 
        
@@ -513,10 +686,12 @@ type solution = cell list list
 
 type nbPont = int
 
-type data_base = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
+type liste_data = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
 
+  
+type historique = (coordinate * coordinate * nbPont) list
 
-type data = (coordinate * coordinate * nbPont) list 
+type data_base = liste_data * historique
 
 module Solution =
 struct
@@ -603,7 +778,6 @@ struct
 
    
    
-   
 
 
 
@@ -659,70 +833,33 @@ struct
     if x1 = x2 then abs (y1 - y2) - 1
     else if y1 = y2 then abs (x1 - x2) - 1
     else raise Sommet_incompatible
-    
+
+ 
     
 
 end ;;
 
 
 
-let solve' p =
-
-  let resStrategie1 = strategie1 (Data.init p) in
-  let res = snd resStrategie1 and rest = fst resStrategie1 in
-
-  let rec aux l acc =
-    match l with
-	[] -> acc
-      | h :: t -> aux t (Solution.relier acc h)
-  in
-
-  if rest = [] then aux res (Solution.init p)
-  else failwith "stratégie 2 !!"
-;;
-
 
 let solve p =
    let resStrategie1 = strategie1 (Data.init p) in
-   let res = snd resStrategie1 in
+   let hist = snd resStrategie1 in
     let rec aux l acc =
     match l with
 	[] -> acc
       | h :: t -> aux t (Solution.relier acc h)
     in
-    aux res (Solution.init p);;
+    aux hist (Solution.init p);;
    
 
 
 solve p;;
-  
 
 
-
-let p1 = [((0,0),4) ; ((3,0),4) ; ((6,0),3);
-
-	 ((1,2),1) ; ((3,2),4) ; ((5,2),2);
-	 ((0,3),4);((6,3),5);
-	 ((0,5),2) ; ((5,5),1);
-	 ((2,6),1) ; ((4,6),3) ; ((6,6),4)];;
-
-Solution.init p1 ;;
-
-
-strategie1 (Data.init p1) ;;
+let p2 = [((2,0),1);((4,0),3);((6,0),1);((0,1),2);((5,1),1);((2,2),4);((4,2),5);((0,3),4);((4,5),1);((0,6),3);((2,6),3);((5,6),2)];;
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+strategie1 (Data.init p2);;
