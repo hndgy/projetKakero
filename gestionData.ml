@@ -59,7 +59,7 @@ let getVoisinDroit p coord =
   in
   if (aux p []) = [] then raise Pas_de_voisin else
     minX (aux p []);;
-
+ 
 
 
 
