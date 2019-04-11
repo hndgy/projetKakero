@@ -448,8 +448,13 @@ let f6  database = (*traite tous les sommets d'imp 6*)
 	  else if ((nbV = 3) && nbPont = 1)
 	  then aux t (Data.map_connect c acc lv 1)
 	    
-	  else if ( ((nbV = 1) && nbPont = 4)
+	  else if ((nbV = 1) && nbPont = 4)
 	  then aux t (Data.connect acc 2 c (List.hd lv))
+
+	  else if ((nbV = 1) && nbPont = 5)
+	  then aux t (Data.connect acc 1 c (List.hd lv))
+
+	      
 	      
 
 	  else aux t acc
@@ -673,6 +678,33 @@ let f4  database = (*traite tous les sommets d'imp 4*)
     ;;
 
 
+   let strategie2 data_base =
+
+     let test db = fst db = [] in
+
+     let testSommet (c,d,lv) =
+       let rec aux lv acc =
+	 match lv with
+	     [] -> acc
+	   | h :: t -> let hypDb = strategie1 (Data.connect acc 1 c h) in
+		       if test hypDb then aux t hypDb
+		       else aux t acc
+       in
+       aux lv data_base
+     in	 
+
+
+     let rec aux ldata acc =
+       match ldata with
+
+	   [] -> acc
+	 | s :: t -> let hypDb = testSommet s in
+		     if test hypDb then aux t hypDb
+		     else aux t acc
+     in
+
+     aux (fst data_base) data_base ;; 
+
     								 
 
 
@@ -848,7 +880,9 @@ struct
 
     let abs a = if a < 0 then -a else a in
     if x1 = x2 then abs (y1 - y2) - 1
+      
     else if y1 = y2 then abs (x1 - x2) - 1
+      
     else raise Sommet_incompatible
 
  
@@ -860,18 +894,32 @@ end ;;
 
 
 let solve p =
-   let resStrategie1 = strategie1 (Data.init p) in
-   let hist = snd resStrategie1 in
+  let resS1 = strategie1 (Data.init p) in
+
+  let res = if fst resS1 = [] then resS1 else strategie2 resS1 in
+  
+  let hist = snd res in
+
+
+  let relier_all hist=
     let rec aux l acc =
-    match l with
-	[] -> acc
-      | h :: t -> aux t (Solution.relier acc h)
+      match l with
+	  [] -> acc
+	| h :: t -> aux t (Solution.relier acc h)
     in
-    aux hist (Solution.init p);;
+    aux hist (Solution.init p)
+  in
+
+  relier_all hist
+
+  
+
+;;
+
    
 
 
-solve p;;
+solve p4;;
 
 
 let p2 = [((2,0),1);((4,0),3);((6,0),1);((0,1),2);((5,1),1);((2,2),4);((4,2),5);((0,3),4);((4,5),1);((0,6),3);((2,6),3);((5,6),2)];;
@@ -883,4 +931,9 @@ strategie1 (Data.init p2);;
 
 
 let p4 = [((0,2),1);((0,4),1);((0,6),3);((1,0),2);((3,0),6);((3,2),6);((3,6),5);((4,3),1);((4,5),1);((5,2),2);((5,6),2);((6,0),3);((6,3),3);((6,5),2)];;
-strategie1 (Data.init p4);;
+
+
+let s1p4 = strategie1 (Data.init p4);;
+
+
+strategie2 s1p4;;
