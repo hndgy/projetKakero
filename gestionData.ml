@@ -138,8 +138,6 @@ let ensVoisin p coord =
   in
   h@d@b@g ;;
 
-ensVoisin p (4,4);;
-
 
 
 
@@ -362,50 +360,17 @@ ldata = data_base
 
 data = data  
 
-(c,d,l) = ( coord ,(imp, nbPont),liste_voisins)
+(c,d,l) = ( coord ,(imp, nbPont),liste_voisins_dispos)
 
 *)
 
 
 
 
-let p = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];;
-
-let d = Data.init p;;
-
-
-let p1 = [((0,0),4) ; ((3,0),4) ; ((6,0),3);
-
-	 ((1,2),1) ; ((3,2),4) ; ((5,2),2);
-	 ((0,3),4);((6,3),5);
-	 ((0,5),2) ; ((5,5),1);
-	 ((2,6),1) ; ((4,6),3) ; ((6,6),4)];;
-
-Solution.init p1 ;;
-
-let di = Data.init p1 ;;
 
 
 
 
-
-
-
-
-strategie1 (Data.init p1);;
-
-  
-solve p1;;
-
-
-let pT = [((0,2),2);((2,0),1);((2,4),1);((4,2),2)];;  
-
-let db  = Data.init pT;;
-
-
-Data.connect db 1 (2,0) (2,4);;
-
-;;
 
 
 
@@ -656,62 +621,13 @@ let f4  database = (*traite tous les sommets d'imp 4*)
   
     
   
-	    
-   let strategie1  data_base =
-    (* on traite les importances a tour de role mais
-				d'abord les paires puis les impaires*)
-    let f db =  f7(f6 (f2 (f1 (f5 (f3 (f4 (f8 db)))))))
-
-    in
-
-    let rec boucle db = (*boucle qui s'arrete quand il n'y plus de modification possible*)
-      let res = f db in
-      if db = res then res
-      else
-	match fst res with
-	  [] -> res
-	| _ -> boucle res
-    in
-    
-		       
-    boucle data_base 
-    ;;
-
-
-   let strategie2 data_base =
-
-     let test db = fst db = [] in
-
-     let testSommet (c,d,lv) =
-       let rec aux lv acc =
-	 match lv with
-	     [] -> acc
-	   | h :: t -> let hypDb = strategie1 (Data.connect acc 1 c h) in
-		       if test hypDb then aux t hypDb
-		       else aux t acc
-       in
-       aux lv data_base
-     in	 
-
-
-     let rec aux ldata acc =
-       match ldata with
-
-	   [] -> acc
-	 | s :: t -> let hypDb = testSommet s in
-		     if test hypDb then aux t hypDb
-		     else aux t acc
-     in
-
-     aux (fst data_base) data_base ;; 
-
-    								 
+					 
 
 
        
 	    
 	    
-strategie1 d ;;
+
 
 
 
@@ -719,9 +635,9 @@ type coordinate = int * int
 
 type importance = int 
 
-type vertex = coordinate * importance
 
-type puzzle = vertex list 
+
+type puzzle = (coordinate* importance) list 
 
 type bridge = { isVertical : bool; isDoubled : bool } 
 
@@ -741,6 +657,46 @@ type liste_data = ((coordinate * (importance * nbPont )) * (coordinate list) ) l
 type historique = (coordinate * coordinate * nbPont) list
 
 type data_base = liste_data * historique
+
+
+    exception Sommet_incompatible;;
+
+module Puzzle =
+struct
+
+  let size p =
+    let max x1 x2 = if x1 > x2 then x1 else x2 in 
+    let rec maxAbs p m =
+      match p with
+	  [] -> m
+	| ((x,_),_) :: t ->  maxAbs t (max x m)
+    in
+     let rec maxOrd p m =
+      match p with
+	  [] -> m
+	| ((_,y),_) :: t ->  maxOrd t (max y m)
+     in
+
+     ( max (maxAbs p 0) (maxOrd p 0)) + 1
+
+
+
+  let distance p (x1,y1) (x2,y2) =
+
+    let abs a = if a < 0 then -a else a in
+    if x1 = x2 then abs (y1 - y2) - 1
+      
+    else if y1 = y2 then abs (x1 - x2) - 1
+      
+    else raise Sommet_incompatible
+
+ 
+    
+
+end ;;
+
+
+
 
 module Solution =
 struct
@@ -812,7 +768,7 @@ struct
    aux 0 s
      
 
- let relier s (((x1,y1) as c1),((x2,y2) as c2),n) =
+ let relier s p (((x1,y1) as c1),((x2,y2) as c2),n) =
    let isD = n = 2
    and isV = x1 = x2
    and t = Puzzle.distance p c1 c2 in
@@ -823,12 +779,6 @@ struct
    else
      if x1 < x2 then addBridgeH s t (x1+1,y1)  isD
      else addBridgeH s t (x2+1,y2) isD
-     
-
-   
-   
-
-
 
 
 
@@ -841,55 +791,137 @@ struct
   in
   aux p (empty (Puzzle.size p))
 
+
  
+ let print s =
+
+   let s' = List.rev (List.map (List.rev) s) in
+    
+   let string_of_cell cell =
+     match cell with
+       | Island x -> "("^string_of_int x^")"
+       | Nothing -> "   "
+       | (Bridge {isVertical =isV; isDoubled = isD}) -> 
+	 if isD && isV then "| |"
+	 else if not isD && isV then " | "
+	 else if isD && not isV then "==="
+	 else "---"
+   in
+   
+
+   let toString_ligne l =
+     let rec aux l acc =
+       match l with
+	   [] -> acc
+	 | h :: t -> aux t (string_of_cell h)^acc
+     in
+     aux l ""
+   in
+   let rec aux s acc =
+     match s with
+	 [] -> acc
+       | h :: t -> aux t "\n"^(toString_ligne h)^acc
+   in
+   print_string (aux s' "\n")
 
 
 end;;
 
-let s1 = Solution.init p;;
-
-Solution.relier s1 ((2, 2), (2, 0), 2);;
 
 
+
+
+let strategie1  data_base =
   
+  let f db =  f7(f6 (f2 (f1 (f5 (f3 (f4 (f8 db)))))))
+
+  in
+
+  let rec boucle db = (*boucle qui s'arrete quand il n'y plus de modification possible*)
+    let res = f db in
+    if db = res then res
+    else
+      match fst res with
+	  [] -> res
+	| _ -> boucle res
+  in
+  
+  boucle data_base 
+;;
 
 
-exception Sommet_incompatible;;
 
-module Puzzle =
-struct
 
-  let size p =
-    let max x1 x2 = if x1 > x2 then x1 else x2 in 
-    let rec maxAbs p m =
-      match p with
-	  [] -> m
-	| ((x,_),_) :: t ->  maxAbs t (max x m)
+let strategie2 data_base =
+
+  let hyp_all_voisin db (c,d,lv) =
+    let rec aux lv acc =
+      match lv with
+	  [] -> acc
+	| h :: t -> let hypDb = strategie1 (Data.connect db 1 c h) in
+		   aux t acc@[hypDb]
     in
-     let rec maxOrd p m =
-      match p with
-	  [] -> m
-	| ((_,y),_) :: t ->  maxOrd t (max y m)
-     in
+    aux lv []
+  in	 
+  let list_hyp db =
+    let rec aux ldata acc =
+      match ldata with
+	  [] -> acc
+	| s :: t -> aux t acc@(hyp_all_voisin db s)
+    in
+    aux (fst db) []
+  in
+	  
+  let next_hyp l = List.flatten (List.map list_hyp l)
+  in
 
-     ( max (maxAbs p 0) (maxOrd p 0)) + 1
+  let test db = fst db = []
+  in
 
+  let rec boucle l_hyp =
+    try List.find test l_hyp 
+    with Not_found -> boucle (next_hyp l_hyp)
+  in
 
-
-  let distance p (x1,y1) (x2,y2) =
-
-    let abs a = if a < 0 then -a else a in
-    if x1 = x2 then abs (y1 - y2) - 1
-      
-    else if y1 = y2 then abs (x1 - x2) - 1
-      
-    else raise Sommet_incompatible
-
- 
+  boucle (list_hyp data_base)
     
+;;
 
-end ;;
+let strategie2Bis data_base =
 
+  let hyp_all_voisin db (c,d,lv) =
+    let rec aux lv acc =
+      match lv with
+	  [] -> acc
+	| h :: t -> let hypDb = strategie1 (Data.connect db 1 c h) in
+		   aux t acc@[hypDb]
+    in
+    aux lv []
+  in	 
+  let list_hyp db =
+    let rec aux ldata acc =
+      match ldata with
+	  [] -> acc
+	| s :: t -> aux t acc@(hyp_all_voisin db s)
+    in
+    aux (fst db) []
+  in
+	  
+  let next_hyp l = List.flatten (List.map list_hyp l)
+  in
+
+  let test db = fst db = []
+  in
+
+  let rec boucle l_hyp =
+    let res =  List.filter test l_hyp in
+    if res = [] then boucle (next_hyp l_hyp)
+    else res
+  in
+
+  boucle (list_hyp data_base)
+    
+;; 
 
 
 
@@ -905,7 +937,7 @@ let solve p =
     let rec aux l acc =
       match l with
 	  [] -> acc
-	| h :: t -> aux t (Solution.relier acc h)
+	| h :: t -> aux t (Solution.relier acc p h)
     in
     aux hist (Solution.init p)
   in
@@ -936,4 +968,45 @@ let p4 = [((0,2),1);((0,4),1);((0,6),3);((1,0),2);((3,0),6);((3,2),6);((3,6),5);
 let s1p4 = strategie1 (Data.init p4);;
 
 
-strategie2 s1p4;;
+List.length (strategie2 s1p4);;
+
+
+
+let p5:puzzle =
+  [ ((0,0),4);((2,0),4);((5,0),2);((8,0),3);
+
+    ((0,2),6);((2,2),8);((4,2),4);((7,2),1);
+
+    ((6,3),1); ((8,3),3);
+
+    ((2,4),2); ((4,4),2); ((7,4),1);
+
+    ((0,5),4); ((3,5),3) ; ((5,5),2);
+
+    ((6,6),2); ((8,6),3);
+
+    ((1,7),1); ((3,7),5); ((5,7),4);
+
+    ((0,8),3); ((2,8),3); ((4,8),2); ((6,8),3); ((8,8),2)
+
+  ];;
+
+
+let p5s2b = strategie2Bis (strategie1 (Data.init p5));;
+
+List.length p5s2b;;
+
+let s5 = solve p5;;
+
+
+let h15 = List.hd s5;;
+
+Solution.print s5;;
+
+
+let s2 = solve p2;;
+
+
+Solution.print s2;;
+
+
