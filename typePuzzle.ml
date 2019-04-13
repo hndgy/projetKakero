@@ -1,9 +1,10 @@
-
 type coordinate = int * int
 
 type importance = int 
 
-type puzzle = vertex list 
+
+
+type puzzle = (coordinate* importance) list 
 
 type bridge = { isVertical : bool; isDoubled : bool } 
 
@@ -17,10 +18,17 @@ type solution = cell list list
 
 type nbPont = int
 
-type data_base = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
+type liste_data = ((coordinate * (importance * nbPont )) * (coordinate list) ) list 
+
+  
+type historique = (coordinate * coordinate * nbPont) list
+
+type data_base = liste_data * historique
 
 
-type data = (coordinate * coordinate * nbPont) list 
+exception Sommet_incompatible
 
 
+exception Pas_de_voisin
 
+exception Empty_list
