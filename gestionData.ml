@@ -176,46 +176,6 @@ module Data = struct
 
 
 
-
-	let connect database nb coord1 coord2  =
-
-	  let database' = control_collision database coord1 coord2 nb in
-	  let ldata = (fst database') and hist = (snd database') in
-
-	  
-	  
-	  let rec modifNb ldata acc =
-	    match ldata with
-		[] -> acc
-	      | ((c,(i,n),v) as h) :: t  ->
-		if c = coord1 || c = coord2 then modifNb t acc@[(c,(i,n+nb),v)]
-		else modifNb t acc@[h]
-	  in
-	  let newHist =
-	    if (List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist) then
-
-	      let rec aux hist acc =
-		match hist with
-		    [] -> acc
-		  | ((c1,c2,n) as h) :: t ->
-		    if (c1 = coord1 && c2 = coord2) ||  (c1 = coord2 && c2 = coord1)
-		    then aux t acc@[(c1,c2,n+1)]
-		    else aux t acc@[h]
-	      in
-	      
-	      aux hist []
-		
-	    else hist@[(coord1,coord2,nb)]
-	  
-	  in
-		  
-	  let newDb = ((modifNb ldata []), newHist) in
-	  
-	  update newDb
-
-       
-
-
 	let control_collision database (x1,y1) (x2,y2) nb =
 	(*retire une ile de la liste des voisins si il y a un pont entre*)
 
@@ -254,8 +214,10 @@ module Data = struct
 	  
 	  ((del ldata),hist)
 		
-	      
 
+
+
+	    
 	let update datab =
 	  let ldata = fst datab and data = snd datab in
 	  
@@ -303,6 +265,47 @@ module Data = struct
 
 
 
+	let connect database nb coord1 coord2  =
+
+	  let database' = control_collision database coord1 coord2 nb in
+	  let ldata = (fst database') and hist = (snd database') in
+
+	  
+	  
+	  let rec modifNb ldata acc =
+	    match ldata with
+		[] -> acc
+	      | ((c,(i,n),v) as h) :: t  ->
+		if c = coord1 || c = coord2 then modifNb t acc@[(c,(i,n+nb),v)]
+		else modifNb t acc@[h]
+	  in
+	  let newHist =
+	    if (List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist) then
+
+	      let rec aux hist acc =
+		match hist with
+		    [] -> acc
+		  | ((c1,c2,n) as h) :: t ->
+		    if (c1 = coord1 && c2 = coord2) ||  (c1 = coord2 && c2 = coord1)
+		    then aux t acc@[(c1,c2,n+1)]
+		    else aux t acc@[h]
+	      in
+	      
+	      aux hist []
+		
+	    else hist@[(coord1,coord2,nb)]
+	  
+	  in
+		  
+	  let newDb = ((modifNb ldata []), newHist) in
+	  
+	  update newDb
+
+       
+
+
+
+
 	
 	let getNbVoisin datab coord =
 	  let ldata = fst datab in
@@ -333,7 +336,6 @@ module Data = struct
 	  aux ldata 0
 
 
-	
 	
 	
 end;;
@@ -992,6 +994,7 @@ let p5:puzzle =
   ];;
 
 
+
 let p5s2b = strategie2Bis (strategie1 (Data.init p5));;
 
 List.length p5s2b;;
@@ -1010,3 +1013,86 @@ let s2 = solve p2;;
 Solution.print s2;;
 
 
+
+
+let list_of_int_of_string s =
+
+  
+  let t = String.length s
+  in
+  
+  let rec aux s acc i =
+    match i with
+	0 -> acc
+      | _ -> let c = String.sub s 0 1  in
+	       match int_of_string_opt c with
+		   Some x ->  aux (String.sub s 1 (i-1)) (x::acc) (i-1)
+		 | None -> aux (String.sub s 1 (i-1)) acc (i-1)
+  in
+  aux s [] t;;
+
+
+
+let puzzle_of_string s =
+  let l = list_of_int_of_string s in
+  let rec aux l acc =
+    match l with
+	[] -> acc
+      | c1::c2::imp::t -> aux t acc@[((c1,c2),imp)]
+	
+  in
+  aux l [];;
+
+
+
+let s = "[((0,0),4);((2,0),4);((5,0),2);((8,0),3);((0,2),6);((2,2),8);((4,2),4);((7,2),1);((6,3),1);((8,3),3);((2,4),2);((4,4),2);((7,4),1);((0,5),4);((3,5),3);((5,5),2);((6,6),2);((8,6),3);((1,7),1);((3,7),5);((5,7),4);((0,8),3);((2,8),3);((4,8),2);((6,8),3);((8,8),2)]";;
+let t= String.length s ;;
+
+list_of_int_of_string s;;
+
+puzzle_of_string s;;
+
+let rec aux s acc i =
+    match s with
+	"" -> acc
+      | _ -> let c = String.sub s 0 1  in
+	       match int_of_string_opt c with
+		   Some x ->  aux (String.sub s 0 (t-i)) (acc@[x]) (i-1)
+		 | None -> aux (String.sub s 0 (t-i)) acc (i-1);;
+
+
+#trace aux;;
+
+aux s [] t;;
+
+read_line ();;
+
+
+let input = read_line () ;;
+
+let p = puzzle_of_string input;;
+
+let sol = solve p;;
+
+Solution.print sol;;
+
+
+
+
+   [ ((0,0),4);((2,0),4);((5,0),2);((8,0),3);
+
+    ((0,2),6);((2,2),8);((4,2),4);((7,2),1);
+
+    ((6,3),1); ((8,3),3);
+
+    ((2,4),2); ((4,4),2); ((7,4),1);
+
+    ((0,5),4); ((3,5),3) ; ((5,5),2);
+
+    ((6,6),2); ((8,6),3);
+
+    ((1,7),1); ((3,7),5); ((5,7),4);
+
+    ((0,8),3); ((2,8),3); ((4,8),2); ((6,8),3); ((8,8),2)
+
+  ];;
