@@ -290,7 +290,7 @@ let strategie2 data_base =
   let next_hyp l = List.flatten (List.map list_hyp l)
   in
 
-  let test db = fst db = []
+  let test db = (fst db = []) && (Data.isConnexe db)
   in
 
   let rec boucle l_hyp =
