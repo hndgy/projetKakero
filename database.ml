@@ -176,6 +176,47 @@ module Data = struct
 	  in
 	  aux lv ldata
 
+	  
+	let isConnexe database =
+	  let hist = snd database in
+
+	  let isConnected coord hist =
+	    let rec aux hist acc =
+	      match hist with
+		  [] -> acc
+		| (c1,c2,_) :: t -> if coord = c1 || coord = c2 then aux t true
+		  else aux t acc||false
+	    in
+	    aux hist false
+	  in
+
+	  let without d hist =
+	    let rec aux hist acc =
+	      match hist with
+		  [] -> acc
+		| h :: t -> if h = d then aux t acc else aux t acc@[h]
+	    in
+	    aux hist []
+	  in
+	  
+	  let aux_isConnexe =
+	    let rec aux h acc =
+	      match h with
+		  [] -> acc
+		| ((c1,c2,_) as s) :: t ->
+		  let histSansS = without s hist in
+		  if (isConnected c1 histSansS) || (isConnected c2 histSansS) then
+		    aux t (acc&&true)
+		  else aux t false
+	    in
+	    aux hist true
+	  in
+
+	  aux_isConnexe 
+	  
+
+
+
 
 	
 	
