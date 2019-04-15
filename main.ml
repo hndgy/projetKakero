@@ -2,42 +2,28 @@ open Solveur;;
 open Solution;;
 open Printf;;
 
-let list_of_int_of_string s =
 
-  
-  let t = String.length s
-  in
-  
-  let rec aux s acc i =
-    match i with
-	0 -> acc
-      | _ -> let c = String.sub s 0 1  in
-	       match int_of_string_opt c with
-		   Some x ->  aux (String.sub s 1 (i-1)) (acc@[x]) (i-1)
-		 | None -> aux (String.sub s 1 (i-1)) acc (i-1)
-  in
-  aux s [] t
-;;
+let p6 =  [ ((0,0),4);((2,0),4);((5,0),2);((8,0),3);
 
+    ((0,2),6);((2,2),8);((4,2),4);((7,2),1);
 
+    ((6,3),1); ((8,3),3);
 
-let puzzle_of_string s =
-  let l = list_of_int_of_string s in
-  let rec aux l acc =
-    match l with
-	[] -> acc
-      | c1::c2::imp::t -> aux t acc@[((c1,c2),imp)]
-  in
-  aux l [];;
+    ((2,4),2); ((4,4),2); ((7,4),1);
+
+    ((0,5),4); ((3,5),3) ; ((5,5),2);
+
+    ((6,6),2); ((8,6),3);
+
+    ((1,7),1); ((3,7),5); ((5,7),4);
+
+    ((0,8),3); ((2,8),3); ((4,8),2); ((6,8),3); ((8,8),2)
+];;
+
+let s6 = Solveur.solve p6 ;;
 
 
 
-let input = Sys.argv.(0) ;;
-
-let p = puzzle_of_string input;;
-
-let sol = Solveur.solve p;;
-
-Solution.print sol;;
+Solution.print s6;;
 
 
