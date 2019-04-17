@@ -3,6 +3,8 @@ open Solution;;
 open Printf;;
 
 
+
+
 let p6 =  [ ((0,0),4);((2,0),4);((5,0),2);((8,0),3);
 
     ((0,2),6);((2,2),8);((4,2),4);((7,2),1);
@@ -33,31 +35,20 @@ let p2 = [((0,0),4);((0,3),4);((0,5),2);((1,2),1);((2,6),1);((3,0),4);
 let p1 = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];;
 
 
-let s6 = Solveur.solve p6 ;;
 
-let s5 = Solveur.solve p5 ;;
+let afficherSolution p legende=
+  Solution.print (Solveur.solve p) legende;;
 
-let s4 = Solveur.solve p4 ;;
+afficherSolution p6 "puzzle 6";;
 
-let s3 = Solveur.solve p3 ;;
+afficherSolution p5 "puzzle 5";;
 
-let s2 = Solveur.solve p2 ;;
+afficherSolution p4 "puzzle 4";;
 
-let s1 = Solveur.solve p1 ;;
+afficherSolution p3 "puzzle 3";;
 
+afficherSolution p2 "puzzle 2";;
 
-
-
-Solution.print s6 "puzzle 6";;
-
-Solution.print s5 "puzzle 5";;
-
-Solution.print s4 "puzzle 4";;
-
-Solution.print s3 "puzzle 3";;
-
-Solution.print s2 "puzzle 2";;
-
-Solution.print s1 "puzzle 1";;
+afficherSolution p1 "puzzle 1";;
 
 
