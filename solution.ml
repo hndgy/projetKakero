@@ -4,7 +4,7 @@ open TypePuzzle;;
 module Solution =
 struct
     
- let empty n =
+ let empty n = (*créée une solution vide (ie remplie de Nothing)*)
   let aux_ligne n =
     let rec aux n acc =
       match n with
@@ -25,7 +25,7 @@ struct
 
 
 
- let add (x,y) c s = (* ajoiute la cell c en (x,y) dans s*)
+ let add (x,y) c s = (* ajoiute la cellule c aux coordonnés (x,y) dans la solution s*)
    let addLine l x =
      let rec aux l x acc =
        match l,x with
@@ -46,11 +46,14 @@ struct
    in
    aux s y []
 
- let addIsland c imp s = add c (Island imp) s
+ let addIsland c imp s = add c (Island imp) s (*ajoute un sommet d'importance imp 
+ aux coordonnés c dans la solution s*)
 
- let addBridge c isV isD s = add c (Bridge {isVertical = isV ; isDoubled = isD}) s
+ let addBridge c isV isD s = add c (Bridge {isVertical = isV ; isDoubled = isD}) s (*ajoute un pont quelconque
+ aux coordnnés c dans s*)
 
  let addBridgeH s taille (x,y) isD =
+ (*ajoute un pont à s avec une taille et de gauche à droite à partir de (x,y)*)
    let rec aux n acc =
      match n with
 	 i when i = taille -> acc
@@ -58,7 +61,9 @@ struct
    in
    aux 0 s
 
+
  let addBridgeV s taille (x,y) isD =
+ (*ajoute un pont à s avec une taille et de haut en bas à partir de (x,y)*)
    let rec aux n acc =
      match n with
 	 i when i = taille -> acc
@@ -68,6 +73,7 @@ struct
      
 
  let relier s p (((x1,y1) as c1),((x2,y2) as c2),n) =
+ (* rilie 2 coordonnés avec un certain nombre de pont dans (coord1,coord2,nbDePont)*)
    let isD = n = 2
    and isV = x1 = x2
    and t = Puzzle.distance p c1 c2 in
@@ -83,6 +89,7 @@ struct
 
 
  let init p =
+ (*initialise la solution, ie ajoute seulement les sommet du puzzle*)
   let rec aux p acc =
      match p with
 	 [] -> acc
@@ -92,8 +99,8 @@ struct
 
 
  
- let print s =
-
+ let print s titre=
+(*imprime une solution sur la sortie standard, avec une légende*)
    let s' = List.rev (List.map (List.rev) s) in
     
    let string_of_cell cell =
@@ -121,7 +128,12 @@ struct
 	 [] -> acc
        | h :: t -> aux t "\n"^(toString_ligne h)^acc
    in
-   print_string (aux s' "\n")
+begin
+  print_newline ();
+   print_string (titre^" : \n");
+   print_string (aux s' "\n");
+   print_newline ()
+ end 
 
 
 end;;
