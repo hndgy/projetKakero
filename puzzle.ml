@@ -3,35 +3,36 @@ open TypePuzzle;;
 module Puzzle =
 struct
 
-  let size p =
+  let size p = (*recupere la taille du carre p*)
     let max x1 x2 = if x1 > x2 then x1 else x2 in 
-    let rec maxAbs p m =
+    let rec maxAbs p m = (*max des abscices*)
       match p with
 	  [] -> m
 	| ((x,_),_) :: t ->  maxAbs t (max x m)
     in
-     let rec maxOrd p m =
+     let rec maxOrd p m = (*max des ordonnés*)
       match p with
 	  [] -> m
 	| ((_,y),_) :: t ->  maxOrd t (max y m)
      in
 
-     ( max (maxAbs p 0) (maxOrd p 0)) + 1
+     ( max (maxAbs p 0) (maxOrd p 0)) + 1 (*taille = (max des 2) + 1 *)
 
 
 
-  let distance p (x1,y1) (x2,y2) =
+  let distance p (x1,y1) (x2,y2) = (* retourne la distance entre 2 sommet*)
 
     let abs a = if a < 0 then -a else a in
-    if x1 = x2 then abs (y1 - y2) - 1
+    if x1 = x2 then abs (y1 - y2) - 1 (*si ils sont dans la même colonne*)
       
-    else if y1 = y2 then abs (x1 - x2) - 1
+    else if y1 = y2 then abs (x1 - x2) - 1 (*si ils sont dans la même ligne*)
       
     else raise Sommet_incompatible
 
 
 
-    let getVoisinGauche p coord =
+    let getVoisinGauche p coord = 
+    (*recupere le voisin gauche si il en a un, sinon leve une exception*)
   let i = fst coord and j =  snd coord 
   in
   let maxX l =
@@ -55,7 +56,7 @@ struct
 
 
 
-let getVoisinDroit p coord =
+let getVoisinDroit p coord = (*idem*)
   let i = fst coord and j =  snd coord 
   in
   let minX l =
@@ -81,7 +82,7 @@ let getVoisinDroit p coord =
 
 
 
-let getVoisinHaut p coord =
+let getVoisinHaut p coord = (*idem*)
   let i = fst coord and j =  snd coord 
   in
 
@@ -107,7 +108,7 @@ let getVoisinHaut p coord =
 
 
 
-let getVoisinBas p coord =
+let getVoisinBas p coord = (*idem*)
   let i = fst coord and j =  snd coord 
   in
       (* let minY l =
@@ -140,7 +141,7 @@ let getVoisinBas p coord =
 
 
 
-let ensVoisin p coord =
+let ensVoisin p coord = (*retourne l'ensemble des voisins d'un sommet *)
   let h = try [getVoisinHaut p coord] with Pas_de_voisin -> []
   and d = try [getVoisinDroit p coord] with Pas_de_voisin -> []
   and b = try [getVoisinBas p coord] with Pas_de_voisin -> []
