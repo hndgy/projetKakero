@@ -1,7 +1,7 @@
 open Puzzle;;
 open TypePuzzle;;
 
-module Data = struct
+module DataBase = struct
 
 
     
@@ -28,7 +28,7 @@ entre certain sommets*)
 
 	    if x1 = x2 && ya = yb then 
 	      (((xa < x1) && (x1 < xb)) || ((xa > x1) &&( x1 > xb) )) &&
-		(((y1 < ya) &&( ya< y2) ) || ((y1 < ya) && (ya< y2) ))
+		(((y1 < ya) &&( ya< y2) ) || ((y1 > ya) && (ya > y2) ))
 	    else if y1 = y2 && xa = xb then 
 	    (((x1 < xa) && (xa < x2)) || ((x1 > xa) && (xa > x2))) &&
 		(((ya < y1) && (y1 < yb)) || ((ya > y1) && (y1 > yb)))
@@ -105,6 +105,7 @@ entre certain sommets*)
 
 	exception NbPontIncorrect
 
+
 	let connect database nb coord1 coord2  =
 	(*connect deux sommets de coordonnés coord1 coord2 avec un nombere nb de ponts*)
 
@@ -122,10 +123,13 @@ entre certain sommets*)
 		else if (c = coord1 || c = coord2) && (nb + n) > i then raise NbPontIncorrect
 		else modifNb t acc@[h]
 	  in
-	  let newHist = (*ajoute l'opération dans l'historique :
+	  let newHist hist = (*ajoute l'opération dans l'historique :
 	  si il y a deja un pont de connecté alors on ajoute un autre pont 
 	  sinon on ajoute un element (coord1,coord2,nb)*)
-	    if (List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist) then
+
+	  if ((List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist)) && nb = 2 
+	  then raise NbPontIncorrect
+	    else if ((List.mem (coord1,coord2,1) hist) || (List.mem (coord2,coord1,1) hist)) && nb = 1 then
 
 	      let rec aux hist acc =
 		match hist with
@@ -142,7 +146,7 @@ entre certain sommets*)
 	  
 	  in
 		  
-	  try update ((modifNb ldata []), newHist) with NbPontIncorrect -> database
+	  try update ((modifNb ldata []), newHist hist) with NbPontIncorrect -> database
 	  (*retourne la nouvelle database si le nb de pont est possible à ajouter sinon on retourne 
 	  celle donnée en argument *)
 	  
