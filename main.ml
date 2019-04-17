@@ -34,7 +34,15 @@ let p2 = [((0,0),4);((0,3),4);((0,5),2);((1,2),1);((2,6),1);((3,0),4);
 
 let p1 = [((2,0),2);((0,2),3);((2,2),8);((4,2),4);((0,4),3);((2,4),5);((4,4),3)];;
 
+let ptest1 = [((0,0),3);((0,2),2);((0,4),4);((0,6),2);
+((2,0),4);((2,4),5);((2,6),1);((4,1),1);((4,4),3);((4,6),3);
+((5,0),4);((5,3),2);((6,2),1);((6,6),3)];;
 
+let ptest2 = [((0,3),2);((0,5),1);((1,0),3);((1,2),2);((1,4),1);((1,6),2);
+((3,0),5);((3,3),6);((3,6),4);((4,5),1);((5,6),2);((6,0),3);((6,3),4);((6,5),2)];;
+
+let ptest3 = [((0,0),2);((0,6),2);((2,0),1);((4,0),2);
+((6,0),2);((6,2),1);((6,4),1);((6,6),2);((4,6),3)];;
 
 let afficherSolution p legende=
   Solution.print (Solveur.solve p) legende;;
@@ -50,5 +58,11 @@ afficherSolution p3 "puzzle 3";;
 afficherSolution p2 "puzzle 2";;
 
 afficherSolution p1 "puzzle 1";;
+
+afficherSolution ptest1 "puzzle hyper hardcore";;
+
+afficherSolution ptest2 "puzzle hyper hardcore2";;
+
+afficherSolution ptest3 "puzzle hyper hardcore3";;
 
 
