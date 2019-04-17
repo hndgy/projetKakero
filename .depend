@@ -1,7 +1,5 @@
 database.cmo : typePuzzle.cmo puzzle.cmo
 database.cmx : typePuzzle.cmx puzzle.cmx
-gestionData.cmo :
-gestionData.cmx :
 main.cmo : solveur.cmo solution.cmo
 main.cmx : solveur.cmx solution.cmx
 puzzle.cmo : typePuzzle.cmo
