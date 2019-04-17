@@ -15,9 +15,9 @@ let f8  database = (*traite tous les sommets d'imp 8*)
 	  if imp = 8 then
 	    let nbV = List.length lv in
 	    if (nbV = 4 && nbPont = 0) ||  (nbV = 3 && nbPont = 2) ||  (nbV = 2 && nbPont = 4) ||  (nbV = 1 && nbPont = 6) then
-	      aux t  (Data.map_connect c acc lv 2)
+	      aux t  (DataBase.map_connect c acc lv 2)
 	    else if ( nbV = 4 && nbPont = 1 ) || ( nbV = 3 && nbPont = 3 ) || ( nbV = 2 && nbPont = 5 ) || (nbV = 1 && nbPont = 7) then
-	      aux t  (Data.map_connect c acc lv 1)
+	      aux t  (DataBase.map_connect c acc lv 1)
 	    else aux t acc
 	  else aux t acc
     in
@@ -38,19 +38,19 @@ let f6  database = (*traite tous les sommets d'imp 6*)
 	  let nbV = List.length lv in
 	  
 	  if ( (nbV = 3) && nbPont = 0) 
-	  then aux t  (Data.map_connect c acc lv 2)
+	  then aux t  (DataBase.map_connect c acc lv 2)
 
 	  else if ((nbV = 2) && nbPont = 2)
-	  then aux t (Data.map_connect c acc lv 2)
+	  then aux t (DataBase.map_connect c acc lv 2)
 
 	  else if ((nbV = 3) && nbPont = 1)
-	  then aux t (Data.map_connect c acc lv 1)
+	  then aux t (DataBase.map_connect c acc lv 1)
 	    
 	  else if ((nbV = 1) && nbPont = 4)
-	  then aux t (Data.connect acc 2 c (List.hd lv))
+	  then aux t (DataBase.connect acc 2 c (List.hd lv))
 
 	  else if ((nbV = 1) && nbPont = 5)
-	  then aux t (Data.connect acc 1 c (List.hd lv))
+	  then aux t (DataBase.connect acc 1 c (List.hd lv))
 
 	      
 	      
@@ -77,16 +77,19 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	  
 	  
 	  if ((nbV = 2) && nbPont = 0)
-	  then aux t (Data.map_connect c acc lv 2)
+	  then aux t (DataBase.map_connect c acc lv 2)
 
 	  else if nbV = 2 && nbPont = 1
-	  then aux t (Data.map_connect c acc lv 1)
+	  then aux t (DataBase.map_connect c acc lv 1)
 	    
 	  else if ( (nbV = 1) && nbPont = 2)
-	  then aux t (Data.connect acc 2 c (List.hd lv))
+	  then aux t (DataBase.connect acc 2 c (List.hd lv))
 	    
 	  else if ( (nbV = 1) && nbPont = 3)
-	  then aux t (Data.connect acc 1 c (List.hd lv))
+	  then aux t (DataBase.connect acc 1 c (List.hd lv))
+
+
+
 
 	      
 	  else aux t acc
@@ -108,12 +111,12 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	   if imp = 2 then
 	     let nbV = List.length lv in 
 	     
-	     if (nbV = 1) && nbPont = 0
-	     then aux t  (Data.connect acc 2 c (List.hd lv))    
+	     if nbV = 1 && nbPont = 0
+	     then aux t  (DataBase.connect acc 2 c (List.hd lv))    
 	       
-	     else if  (nbV  = 1) && nbPont = 1
-	     then aux t  (Data.connect acc 1 c (List.hd lv))
-	       
+	     else if nbV  = 1 && nbPont = 1
+	     then aux t  (DataBase.connect acc 1 c (List.hd lv))
+
 	     else aux t acc
 
 	     else aux t acc
@@ -133,7 +136,7 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	    [] -> acc
 	  | (c,(imp,nbPont),lv) :: t ->
 	    if ((imp = 1) && ((List.length lv) = 1))
-	    then aux t  (Data.connect acc 1 c (List.hd lv))
+	    then aux t  (DataBase.connect acc 1 c (List.hd lv))
 	    else aux t acc
       in
       aux ldata database
@@ -152,13 +155,13 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	     let nbV = List.length lv in 
 
 	     if ( nbV = 1 && nbPont = 1 )
-	     then aux t  (Data.connect acc 2 c (List.hd lv))
+	     then aux t  (DataBase.connect acc 2 c (List.hd lv))
 	       
 	     else if ( nbV = 1 && nbPont = 2 )
-	     then aux t  (Data.connect acc 1 c (List.hd lv))
+	     then aux t  (DataBase.connect acc 1 c (List.hd lv))
 	       
 	     else if nbV = 2 && nbPont = 0
-	     then aux t (Data.map_connect c acc lv 1)
+	     then aux t (DataBase.map_connect c acc lv 1)
 
 
 	     else aux t acc
@@ -180,22 +183,20 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	   if imp = 5 then
 	     let nbV = List.length lv in
 	     if ( (nbV = 1) && nbPont = 3) 
-	     then aux t  (Data.connect acc 2 c (List.hd lv))
+	     then aux t  (DataBase.connect acc 2 c (List.hd lv))
 
 	     else if nbV = 1 && nbPont = 4
-	     then aux t  (Data.connect acc 1 c (List.hd lv))  
+	     then aux t  (DataBase.connect acc 1 c (List.hd lv))  
 
 	     else if ( (nbV = 2) && (nbPont = 1))
-	     then aux t (Data.map_connect c acc lv 2)
+	     then aux t (DataBase.map_connect c acc lv 2)
 	       
 	     else if ((nbV = 2 ) && (nbPont = 2 ))
-	     then aux t  (Data.map_connect c acc lv 1)
+	     then aux t  (DataBase.map_connect c acc lv 1)
 
 	     else if nbV = 3 && nbPont = 0
-	     then aux t  (Data.map_connect c acc lv 1)
-
-
-	     
+	     then aux t  (DataBase.map_connect c acc lv 1)
+    
 	     else
 	       aux t acc 
 
@@ -216,26 +217,26 @@ let f4  database = (*traite tous les sommets d'imp 4*)
 	     let nbV = List.length lv in
 	     
 	     if ( (nbV = 1) && nbPont = 5) 
-	     then aux t  (Data.connect acc 2 c (List.hd lv))
+	     then aux t  (DataBase.connect acc 2 c (List.hd lv))
 
 	     else if ( (nbV = 1) && nbPont = 6)
-	     then aux t  (Data.connect acc 1 c (List.hd lv))
+	     then aux t  (DataBase.connect acc 1 c (List.hd lv))
 	       
 	       
 	     else if nbV = 3 && nbPont = 1
-	     then  aux t  (Data.map_connect c acc lv 2)
+	     then  aux t  (DataBase.map_connect c acc lv 2)
 
 	     else if nbV = 4 && nbPont = 0
-	     then  aux t  (Data.map_connect c acc lv 1)
+	     then  aux t  (DataBase.map_connect c acc lv 1)
 	       
 	     else if nbV = 3 && nbPont = 2
-	     then  aux t  (Data.map_connect c acc lv 1)
+	     then  aux t  (DataBase.map_connect c acc lv 1)
 
 	     else if nbV = 2 && nbPont = 3
-	     then  aux t  (Data.map_connect c acc lv 2)
+	     then  aux t  (DataBase.map_connect c acc lv 2)
 
 	     else if nbV = 2 && nbPont = 4 
-	     then  aux t  (Data.map_connect c acc lv 1)
+	     then  aux t  (DataBase.map_connect c acc lv 1)
 	     else aux t acc
 	       
 	       
@@ -324,7 +325,7 @@ et en appliquant la stratégie 1 *)
     let rec aux lv acc =
       match lv with
 	  [] -> acc
-	| h :: t -> let hypDb = strategie1 (Data.connect db 1 c h) in
+	| h :: t -> let hypDb = strategie1 (DataBase.connect db 1 c h) in
 		   aux t acc@[hypDb]
     in
     aux lv []
@@ -346,19 +347,19 @@ et en appliquant la stratégie 1 *)
   in
 
   let rec boucle l_hyp = (*tant qu'il n'y a pas de solution connexe et complète 
-  alors on créée une nouvelle génération dans l'arbre*)
+  alors on créée une nouvelle génération dans l'arbre
+ou on s'arrete si il n'y plus de chagement *)
     try List.find test l_hyp 
-    with Not_found -> boucle (next_hyp l_hyp)
+    with Not_found -> boucle (next_hyp l_hyp) 
   in
 
   boucle (list_hyp data_base)
-    
 
 
 
 let solve p =
 	(*resout un puzzle*)
-  let resS1 = strategie1 (Data.init p) in (*applique d'abors la strategie 1*)
+  let resS1 = strategie1 (DataBase.init p) in (*applique d'abors la strategie 1*)
 
   let res = if fst resS1 = [] then resS1 else strategie2 resS1 p in 
   (*si la solution n'est pas somplète alors un applique la stratégie 2*)
