@@ -283,8 +283,7 @@ let isConnexe database p =
 		       in
 		       aux l []
   in
-  
-		       
+  	       
  
   let compConnex hist lconnex= 
   (*retourne une composante connexe avec l'historique (à un moment donné)des opérations effectuées*)
@@ -315,6 +314,17 @@ let isConnexe database p =
   in
   isAllconnexe
 
+  let tousTraite database = (*verifie que tous les sommets sont traités (nbPont = imp)*)
+   let rec aux ldata acc =
+      match ldata with
+	  [] -> acc
+	| (_,(imp,nb),_) :: t ->
+	  if imp = nb then aux t true
+	  else aux [] false
+   in
+   aux (fst database) false
+
+
 
 
 let strategie2 data_base p =(*applique la strategie 2 en créant un arbre de possiblité *)
@@ -342,7 +352,7 @@ et en appliquant la stratégie 1 *)
   let next_hyp l = List.flatten (List.map list_hyp l) (*réapplique *)
   in
 
-  let test db = fst db = [] && isConnexe db p(*teste si tous les sommets sont traités 
+  let test db = (tousTraite db) && (isConnexe db p)(*teste si tous les sommets sont traités 
   et la connexité de la solution*)
   in
 
@@ -361,7 +371,7 @@ let solve p =
 	(*resout un puzzle*)
   let resS1 = strategie1 (DataBase.init p) in (*applique d'abors la strategie 1*)
 
-  let res = if fst resS1 = [] then resS1 else strategie2 resS1 p in 
+  let res = if tousTraite resS1 then resS1 else strategie2 resS1 p in 
   (*si la solution n'est pas somplète alors un applique la stratégie 2*)
   
   let hist = snd res in
