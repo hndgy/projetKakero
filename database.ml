@@ -60,25 +60,22 @@ entre certain sommets*)
 	      
 
 	let update datab =
-	(*met à jour la database: supprime les sommet traité, ie ou le nombre de pont vaut l'importance*)
+	(*met à jour la database: supprime les sommet traité, ie ou le nombre de pont connecté au sommet vaut sont importance*)
 	  let ldata = fst datab and data = snd datab in
 	  
 	  let update_aux ldata =
 	    
 	    
-	    let rec aux ldata acc supp =
-	    (*supprime les elements traite (imp = nbPont) + stock les element supprime dans supp*)
+	    let rec aux ldata supp =
+	    (*recupere les sommets traités nbPont = imp *)
 	      match ldata with
-		  [] -> acc,supp
-		| ((c,(imp,n),_) as h) :: t -> if imp = n then aux t acc (supp@[c])
-		  else aux t (acc@[h]) supp
+		  [] -> supp
+		| (c,(imp,n),_) :: t -> if imp = n then aux t (supp@[c])
+		  else aux t supp
 		    
 
 	    in
-	    
-	    let res = aux ldata [] []
-	    in
-	    let ld = fst res and lsupp = snd res
+	    let lsupp = aux ldata []
 	    in
 	    let delete e (c,d,l) =
 	    (* supprime dans une liste de voisin  (l dans (c,d,l) )l'element e*)
@@ -91,13 +88,13 @@ entre certain sommets*)
 	      (c,d,aux l [])
 	    in
 
-	 (*supprime les elements supprimés des liste de voisin de chaque sommets restants*)
+	 (*supprime les elements supprimés (lsupp) des liste de voisin de chaque sommets restants*)
 	    let rec aux1 supp acc =
 	      match supp with
 		  [] -> acc
 		| h :: t -> aux1 t (List.map (delete h) acc)
 	    in
-	    aux1 lsupp ld
+	    aux1 lsupp ldata
 	  in
 
 	(update_aux ldata,data)
